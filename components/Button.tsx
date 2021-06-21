@@ -1,6 +1,6 @@
 type ButtonProps = {
   text: string
-  onClick?: () => {}
+  onClick?: () => void
   alt?: boolean
 }
 
@@ -10,9 +10,8 @@ export default function Button({ text, onClick, alt }: ButtonProps) {
       onClick={onClick}
       className={
         alt
-          ? ''
-          : 'bg-transparent border-navyBlue ' +
-            'border-2 rounded-md text-navyBlue px-3 py-2'
+          ? 'border-2 border-navyBlue px-3 py-2 rounded-md bg-navyBlue text-white'
+          : 'border-2 border-navyBlue px-3 py-2 rounded-md bg-transparent text-navyBlue'
       }
     >
       {text}
