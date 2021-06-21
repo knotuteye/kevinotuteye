@@ -10,8 +10,8 @@ export default function Button({ text, onClick, alt }: ButtonProps) {
       onClick={onClick}
       className={
         alt
-          ? 'border-2 border-navyBlue px-3 py-2 rounded-md bg-navyBlue text-white'
-          : 'border-2 border-navyBlue px-3 py-2 rounded-md bg-transparent text-navyBlue'
+          ? 'border-2 border-starBlue px-3 py-2 rounded-md bg-starBlue text-white'
+          : 'border-2 border-starBlue px-3 py-2 rounded-md bg-transparent text-starBlue'
       }
     >
       {text}
