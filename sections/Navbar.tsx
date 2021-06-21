@@ -1,9 +1,9 @@
-import Button from './Button'
-import Masthead from './Masthead'
+import Button from '../components/Button'
+import Masthead from '../components/Masthead'
 
 export default function Navbar() {
   return (
-    <div className="flex items-center px-20 py-3 ">
+    <div className="flex items-center px-20 py-5 ">
       <div>
         <Masthead></Masthead>
       </div>
