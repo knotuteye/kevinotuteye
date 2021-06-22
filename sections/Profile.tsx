@@ -4,13 +4,13 @@ export default function Profile({}) {
   return (
     <div id="profile" className="flex flex-col justify-center items-center">
       <div
-        className="flex my-20 rounded-full border-4 border-pistachio"
+        className="flex my-20 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
         style={{
           height: '20rem',
           width: '20rem',
           backgroundImage: 'url(/img/profile.png)',
           backgroundPosition: 'center bottom',
-          backgroundSize: '85%',
+          backgroundSize: '83%',
           backgroundRepeat: 'no-repeat',
         }}
       ></div>
