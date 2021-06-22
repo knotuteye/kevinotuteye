@@ -1,3 +1,4 @@
+import BlogSection from '../sections/BlogSection'
 import Header from '../sections/Header'
 import Navbar from '../sections/Navbar'
 
@@ -6,6 +7,7 @@ export default function Blog() {
     <div>
       <Header></Header>
       <Navbar></Navbar>
+      <BlogSection></BlogSection>
     </div>
   )
 }
