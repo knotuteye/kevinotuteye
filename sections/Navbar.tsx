@@ -1,25 +1,34 @@
+import { useRouter } from 'next/dist/client/router'
 import Button from '../components/Button'
 import Masthead from '../components/Masthead'
-import { theme } from '../tailwind.config'
+
 export default function Navbar() {
-  const colors = Object.keys(theme.colors).filter((x) => !['white'])
+  const router = useRouter()
   const navButtons = [
     {
       text: 'Blog',
-      onClick: () => {},
+      onClick: () => {
+        router.push('blog')
+      },
     },
     {
       text: 'Work',
-      onClick: () => {},
+      onClick: () => {
+        router.push('work')
+
+      },
     },
     {
       text: 'Say Hi',
-      onClick: () => {},
+      onClick: () => {
+        router.push('contact')
+
+      },
       alt: true,
     },
   ]
   return (
-    <div className="flex items-center px-20 py-5 ">
+    <div className="flex items-center py-5 " style={{ padding: '2rem' }}>
       <div>
         <Masthead></Masthead>
       </div>
