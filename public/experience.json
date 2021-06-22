@@ -1,0 +1,62 @@
+[
+  {
+    "role": "",
+    "company": "",
+    "aboutCompany": "",
+    "startDate": "",
+    "endDate": "",
+    "projects": [
+      { "name": "", "link": "", "about": "", "technologies": [] },
+      { "name": "", "link": "", "about": "", "technologies": [] },
+      { "name": "", "link": "", "about": "", "technologies": [] }
+    ]
+  },
+  {
+    "role": "FULLSTACK DEVELOPER",
+    "company": "JLS TRADING CO., USA",
+    "aboutCompany": "JLS Trading Company is an Amazon Seller Partner which manages private label brands in nearly every consumer category from toys to tools to office products to gourmet food. I worked closely with Process Managers and Product Officers to implement mainly in-house solutions to optimize business processes.",
+    "startDate": "October 2020",
+    "endDate": "Present",
+    "projects": [
+      {
+        "name": "JLS ERP",
+        "link": "jlserp.com",
+        "about": "A SaaS product that enables users to track warehouse or factory inventory, employees, and assets. Built standalone components in React Typescript for the front-end application of the new SaaS product. Wrote exhaustive unit and integration tests in Jest and Enzyme. Wrote documentation for standalone component packages.\nThe company is on track to release the first public beta of the SaaS product. This project is spearheading the company's efforts to diversify its operations.",
+        "technologies": [
+          "Express.js",
+          "React",
+          "Typescript",
+          "CSS3",
+          "Jest",
+          "Unit Testing",
+          "REST/RESTful APIs"
+        ]
+      },
+      {
+        "name": "Warehouse Digitization",
+        "link": "",
+        "about": "Led the effort to automate and optimize warehouse processes. Developed algorithms in Typescript for optimizing warehouse traversal when fulfilling pick lists. Developed algorithms in Typescript for generating digital addresses for areas within warehouses. Performed exhaustive unit and integration testing with Jest.\nSlashed fuel costs by 35% and order fulfillment time drastically. Improved inventory management by warehouse zoning.",
+        "technologies": [
+          "Typescript",
+          "Algorithms and Data Structures",
+          "REST/RESTful APIs",
+          "Optimization",
+          "Problem Solving"
+        ]
+      },
+      { "name": "", "link": "", "about": "", "technologies": [] }
+    ]
+  },
+  {
+    "role": "",
+    "company": "",
+    "aboutCompany": "",
+    "startDate": "",
+    "endDate": "",
+    "projects": [
+      { "name": "", "link": "", "about": "", "technologies": [] },
+      { "name": "", "link": "", "about": "", "technologies": [] },
+      { "name": "", "link": "", "about": "", "technologies": [] }
+    ]
+  }
+]
