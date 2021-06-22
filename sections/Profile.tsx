@@ -2,7 +2,7 @@ export default function Profile({}) {
   return (
     <div id="profile" className="flex flex-col justify-center items-center">
       <div
-        className="flex my-20 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
+        className="flex mt-20 mb-12 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
         style={{
           height: '20rem',
           width: '20rem',
@@ -19,7 +19,7 @@ export default function Profile({}) {
         </p>
         <p>
           I create beautiful digital experiences on the
-          <span className="font-bold text-orangeRed"> web</span>{' '}
+          <span className="font-bold text-orangeRed"> web,</span>{' '}
           <span className="font-bold text-yellowOrange"> mobile</span> and{' '}
           <span className="font-bold text-maizeCrayola">desktop.</span>
         </p>

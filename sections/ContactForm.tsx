@@ -8,6 +8,11 @@ export default function ContactForm({ show, setShow }: Props) {
   function dismissHandler(e: HTMLDivElement) {
     if (e.id === 'backdrop') setShow(false)
   }
+
+  function sendMessage() {
+    return setShow(false)
+  }
+
   return show ? (
     <div
       id="backdrop"
@@ -15,8 +20,7 @@ export default function ContactForm({ show, setShow }: Props) {
       onClick={(e) => dismissHandler(e.target as HTMLDivElement)}
       style={{ backgroundColor: '#000000aa' }}
     >
-      <form
-        action=""
+      <div
         className="flex flex-col bg-white max-w-md my-20 rounded-xl px-10 py-10 gap-y-5 font-body"
         style={{ width: '100%' }}
       >
@@ -33,14 +37,14 @@ export default function ContactForm({ show, setShow }: Props) {
           placeholder="Email"
         />
         <textarea
-          className="border-2 border-maizeCrayola rounded-md text-sm px-3 py-2"
+          className="border-2 resize-none border-maizeCrayola rounded-md text-sm px-3 py-2"
           name="message"
           cols={30}
-          rows={10}
+          rows={6}
           placeholder="Message"
         ></textarea>
-        <Button text="Send"></Button>
-      </form>
+        <Button text="Send" onClick={sendMessage}></Button>
+      </div>
     </div>
   ) : (
     <></>
