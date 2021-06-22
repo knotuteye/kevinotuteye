@@ -15,13 +15,13 @@
     {
       "role": "FULLSTACK DEVELOPER",
       "company": "JLS TRADING CO., USA",
-      "aboutCompany": "JLS Trading Company is an Amazon Seller Partner which manages private label brands in nearly every consumer category from toys to tools to office products to gourmet food. I worked closely with Process Managers and Product Officers to implement mainly in-house solutions to optimize business processes.",
+      "aboutCompany": "JLS Trading Company is an Amazon Seller Partner which manages private label brands in nearly every consumer category from toys to tools to office products to gourmet food. I worked closely with Process Managers and Product Officers to implement solutions to optimize business processes.",
       "startDate": "October 2020",
       "endDate": "Present",
       "projects": [
         {
           "name": "JLS ERP",
-          "link": "jlserp.com",
+          "link": "https://www.jlserp.com",
           "about": "A SaaS product that enables users to track warehouse or factory inventory, employees, and assets. Built standalone components in React Typescript for the front-end application of the new SaaS product. Wrote exhaustive unit and integration tests in Jest and Enzyme. Wrote documentation for standalone component packages.\nThe company is on track to release the first public beta of the SaaS product. This project is spearheading the company's efforts to diversify its operations.",
           "technologies": [
             "Express.js",
@@ -102,7 +102,7 @@
       "projects": [
         {
           "name": "Truckr Component Library + Website",
-          "link": "www.truckrtech.com",
+          "link": "https://www.truckrtech.com",
           "about": "Developed reusable components in Vue and React for company projects. Translated UI design, animations, and mockups in Figma into web components. Performed extensive unit testing with Jest and Enzyme. Led the documentation of the component library. Composed the company's website from the created component library.",
           "technologies": [
             "JavaScript",
