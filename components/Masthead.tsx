@@ -7,9 +7,11 @@ export default function Masthead({}) {
 
   return (
     <Link href="/">
-      <h1 className="font-heading text-3xl font-bold text-white cursor-pointer">
+      <h1 className="font-heading text-2xl font-bold text-white cursor-pointer">
         {logo.split('').map((x, i) => (
-          <span className={`bg-${colors[i % colors.length]} px-2 py-1`}>{x}</span>
+          <span key={i} className={`bg-${colors[i % colors.length]} px-2 py-1`}>
+            {x}
+          </span>
         ))}
       </h1>
     </Link>

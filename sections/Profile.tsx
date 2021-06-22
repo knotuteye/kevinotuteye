@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 export default function Profile({}) {
   return (
     <div id="profile" className="flex flex-col justify-center items-center">
@@ -15,14 +13,21 @@ export default function Profile({}) {
         }}
       ></div>
       <div className="flex flex-col gap-y-3 text-2xl max-w-xl font-body text-center text-queenBlue">
-        <span>
+        <p>
           Hi there, I'm{' '}
-          <span className=" text-maizeCrayola font-bold">Kevin Otuteye.</span>
-        </span>
-        <span>
-          I create beautiful digital experiences from web to desktop to mobile.
-        </span>
-        <span>When I'm not writing code, I'm making music.</span>
+          <span className=" text-redSalsa font-bold">Kevin Otuteye.</span>
+        </p>
+        <p>
+          I create beautiful digital experiences on the
+          <span className="font-bold text-orangeRed"> web</span>{' '}
+          <span className="font-bold text-yellowOrange"> mobile</span> and{' '}
+          <span className="font-bold text-maizeCrayola">desktop.</span>
+        </p>
+        <p>
+          When I'm not writing{' '}
+          <span className="font-bold text-pistachio">code</span> , I'm making{' '}
+          <span className="font-bold text-zomp">music.</span>
+        </p>
       </div>
     </div>
   )
