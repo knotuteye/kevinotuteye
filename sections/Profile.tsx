@@ -1,19 +1,23 @@
 import Image from 'next/image'
 
 export default function Profile({}) {
+  const profilePic = require('/public/img/profile.jpg')
   return (
-    <div id="profile" className="flex justify-center items-center" style={{}}>
+    <div id="profile" className="flex flex-col justify-center items-center">
       <div
         className="flex my-20 rounded-full"
-        style={{ height: '20rem', width: '19rem' }}
+        style={{ height: '20rem', width: '20rem' }}
       >
-        <Image
-          src={require('/public/img/profile.jpg')}
-          className="rounded-full"
-        ></Image>
+        <Image src={profilePic} className="rounded-full"></Image>
       </div>
-      <div>
-        
+      <div className="flex flex-col gap-y-3 text-2xl max-w-xl font-body text-center text-starBlue">
+        <span>
+          Hi there, I'm <span className="font-bold">Kevin Otuteye.</span>
+        </span>
+        <span>
+          I create beautiful digital experiences from web to desktop to mobile.
+        </span>
+        <span>When I'm not writing code, I'm making music.</span>
       </div>
     </div>
   )
