@@ -21,6 +21,12 @@ export default function Navbar() {
       },
     },
     {
+      text: 'Projects',
+      onClick: () => {
+        router.push('projects')
+      },
+    },
+    {
       text: 'Say Hi',
       icon: (
         <svg
