@@ -43,7 +43,40 @@
           "Optimization",
           "Problem Solving"
         ]
-      },
+      }
+    ]
+  },
+  {
+    "role": "LEAD MOBILE APP DEVELOPER",
+    "company": "WINK INITIATIVES, GH",
+    "aboutCompany": "Wink Initiatives is a collaborative company that explores ideas of young people and helps to develop them into businesses and initiatives that help the community. I led a team of 4 developers to build a blood donation app as part of the company's social initiatives.",
+    "startDate": "January 2020",
+    "endDate": "January 2021",
+    "projects": [
+      {
+        "name": "Pints App",
+        "link": "https://play.google.com/store/apps/details?id=com.pint&hl=en&gl=US",
+        "about": "Pint is a mobile app that has the primary function of taking requests from people who need blood donation, matching the blood group of the requester with eligible donors on the app, exchanging contacts between the wiling donor and the blood requester, allowing people to volunteer as blood donors (on standby to be contacted whenever there is an urgent need). This is to help people who are in dire need of blood find people who are willing to donate blood.The early demos of the application attracted investor and media attention as well as the Ghana Medical Association.",
+        "technologies": [
+          "Google Cloud Platform",
+          "Android",
+          "Firebase",
+          "Typescript",
+          "React Native",
+          "UI Design"
+        ]
+      }
+    ]
+  },
+  {
+    "role": "",
+    "company": "",
+    "aboutCompany": "",
+    "startDate": "",
+    "endDate": "",
+    "projects": [
+      { "name": "", "link": "", "about": "", "technologies": [] },
+      { "name": "", "link": "", "about": "", "technologies": [] },
       { "name": "", "link": "", "about": "", "technologies": [] }
     ]
   },
