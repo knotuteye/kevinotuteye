@@ -9,8 +9,10 @@ export default function Button({ text, onClick, alt }: ButtonProps) {
     <button
       onClick={onClick}
       className={`${
-        alt ? ' bg-redSalsa border-redSalsa font-bold text-white' : ' bg-transparent text-orangeRed'
-      } border-2 px-3 py-2 rounded-md text-sm`}
+        alt
+          ? ' bg-yellowOrange border-yellowOrange font-bold text-white'
+          : ' bg-transparent text-redSalsa'
+      } border-2 px-3 py-2 rounded-md text-sm shadow-md`}
     >
       {text}
     </button>
