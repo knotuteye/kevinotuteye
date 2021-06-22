@@ -69,27 +69,50 @@
     ]
   },
   {
-    "role": "",
-    "company": "",
-    "aboutCompany": "",
-    "startDate": "",
-    "endDate": "",
+    "role": "FULLSTACK DEVELOPER",
+
+    "company": "ASQII LLC, GH",
+    "aboutCompany": "Asqii LLC is a software development company based in Kumasi, Ghana. I worked closely with Engineering Managers to strategize product design and implementation.",
+    "startDate": "June 2020",
+    "endDate": "October 2020",
     "projects": [
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] }
+      {
+        "name": "Asset Manager NCA",
+        "link": "",
+        "about": "Developed bespoke fixed asset management software for the National Communications Authority of Ghana using React, Typescript, Express, and TypeORM according to MVC architecture. Provisioned a CI/CD pipeline with Gitlab CI and Heroku. Performed exhaustive unit and integration testing with Jest and Enzyme. Deployed on a Linux server and performed technical training and troubleshooting on the developed asset management system.",
+        "technologies": [
+          "React",
+          "Typescript",
+          "Express.js",
+          "CSS3",
+          "MySQL",
+          "Node.js",
+          "Integration Testing,"
+        ]
+      }
     ]
   },
   {
-    "role": "",
-    "company": "",
-    "aboutCompany": "",
-    "startDate": "",
-    "endDate": "",
+    "role": "LEAD FRONTEND ENGINEER",
+    "company": "TRUCKRSOFT TECHNOLOGIES, GH",
+    "aboutCompany": "A marketplace app for listing and booking of 3rd party logistics truck services.",
+    "startDate": "July 2019",
+    "endDate": "September 2019",
     "projects": [
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] }
+      {
+        "name": "Truckr Component Library + Website",
+        "link": "www.truckrtech.com",
+        "about": "Developed reusable components in Vue and React for company projects. Translated UI design, animations, and mockups in Figma into web components. Performed extensive unit testing with Jest and Enzyme. Led the documentation of the component library. Composed the company's website from the created component library.",
+        "technologies": [
+          "JavaScript",
+          "Vue.js",
+          "CSS3",
+          "HTML",
+          "Jest",
+          "Figma",
+          "React"
+        ]
+      }
     ]
   }
 ]
