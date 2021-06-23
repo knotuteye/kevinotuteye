@@ -52,7 +52,7 @@ export default function Navbar() {
   ]
   return (
     <>
-      <div className="flex items-center md:justify-start pl-2 pt-3 md:p-5">
+      <div className="flex items-center justify-between md:justify-start px-2 pt-3 md:p-5">
         <Masthead></Masthead>
         <div className="hidden md:flex flex-1 gap-x-5 justify-end font-body ">
           {navButtons.map((btn, i) => (
@@ -64,6 +64,22 @@ export default function Navbar() {
               icon={btn.icon}
             ></Button>
           ))}
+        </div>
+        <div className="md:hidden border rounded-sm mr-1 cursor-pointer text-queenBlue">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
         </div>
       </div>
       <ContactForm
