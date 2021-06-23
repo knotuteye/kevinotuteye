@@ -2,7 +2,7 @@ export default function Profile({}) {
   return (
     <div id="profile" className="flex flex-col justify-center items-center">
       <div
-        className="flex my-10 md:mt-16 md:mb-12 h-36 w-36 md:h-72 md:w-72 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
+        className="flex my-10 md:mt-16 md:mb-12 h-36 w-36 md:h-72 md:w-72 rounded-full border-4 border-maizeCrayola bg-pistachio shadow-lg"
         style={{
           backgroundImage: 'url(/img/profile.png)',
           backgroundPosition: 'center bottom',

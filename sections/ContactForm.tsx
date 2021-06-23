@@ -29,7 +29,7 @@ export default function ContactForm({ show, setShow }: Props) {
             <div key={x} className={`flex flex-1 bg-${x}`}></div>
           ))}
           <div
-            className="text-white absolute right-2 top-2"
+            className="cursor-pointer text-white absolute right-2 top-2 md:right-5 md:top-5"
             onClick={() => setShow(false)}
           >
             <svg

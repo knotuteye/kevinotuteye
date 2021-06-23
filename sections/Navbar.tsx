@@ -70,7 +70,7 @@ export default function Navbar() {
           ))}
         </div>
         <div
-          className="md:hidden border rounded-sm mr-1 cursor-pointer text-queenBlue"
+          className="md:hidden rounded-sm mr-1 cursor-pointer text-queenBlue"
           onClick={() => setShowMobileMenu(true)}
         >
           <svg
