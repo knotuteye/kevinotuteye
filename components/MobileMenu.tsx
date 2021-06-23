@@ -38,6 +38,7 @@ export default function MobileMenu({ buttons, show, setShow }: Props) {
       <div className="flex flex-col items-center justify-center gap-y-10">
         {buttons.map((btn) => (
           <div
+            key={btn.text}
             onClick={() => {
               btn.onClick()
               setShow(false)

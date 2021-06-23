@@ -8,11 +8,11 @@ export default function Projects({}) {
   )
 
   return (
-    <div className="flex flex-col px-20 py-16 ">
-      <div className="flex gap-x-3 text-4xl items-center p-5 text-redSalsa">
+    <div className="flex flex-col p-5  md:px-20 md:py-16 ">
+      <div className="flex gap-x-3 text-3xl md:text-4xl items-center py-2 md:p-5 text-redSalsa">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="mt-1 h-10 w-10"
+          className="mt-1 h-8 w-8 md:h-10 md:w-10"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -26,7 +26,7 @@ export default function Projects({}) {
         </svg>
         <h1 className="font-heading">Recent Projects</h1>
       </div>
-      <div className="flex flex-col gap-y-16 pl-6">
+      <div className="flex flex-col gap-y-16 md:pl-6">
         <div className="flex flex-col gap-y-7 mt-5">
           {projects.map((proj, x) => (
             <div
@@ -38,7 +38,7 @@ export default function Projects({}) {
               <div className={`font-bold text-${colors[x % colors.length]}`}>
                 {proj.name}
               </div>
-              <a className="text-queenBlue" href={proj.link}>
+              <a className="text-queenBlue break-words overflow-ellipsis" href={proj.link}>
                 {proj.link}
               </a>
               <div className="my-1 font-body">{proj.about}</div>
