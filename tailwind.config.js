@@ -1,22 +1,22 @@
 const colors = require('tailwindcss/colors')
+const theme = require('./Theme')
 
 module.exports = {
-  purge: false,
-  // [
-  // './pages/**/*.{js,ts,jsx,tsx}',
-  // './components/**/*.{js,ts,jsx,tsx}',
-  // './sections/**/*.{js,ts,jsx,tsx}',
-  // ],
+  purge: {
+    content: [
+      './pages/**/*.{js,ts,jsx,tsx}',
+      './components/**/*.{js,ts,jsx,tsx}',
+    ],
+    options: {
+      whitelist: Object.keys(theme.colors)
+        .map((x) => `text-${x}`)
+        .concat(Object.keys(theme.colors).map((x) => `bg-${x}`)),
+    },
+  },
   darkMode: false, // or 'media' or 'class'
   theme: {
     colors: {
-      redSalsa: '#f94144',
-      orangeRed: '#f3722c',
-      yellowOrange: '#f8961e',
-      maizeCrayola: '#f9c74f',
-      pistachio: '#90be6d',
-      zomp: '#43aa8b',
-      queenBlue: '#577590',
+      ...theme.colors,
       white: colors.white,
     },
     fontFamily: {

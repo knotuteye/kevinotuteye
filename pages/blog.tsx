@@ -1,11 +1,9 @@
-import BlogSection from '../sections/BlogSection'
-import Header from '../sections/Header'
-import Navbar from '../sections/Navbar'
+import BlogSection from '../components/BlogSection'
+import Navbar from '../components/Navbar'
 
 export default function Blog() {
   return (
     <div>
-      <Header></Header>
       <Navbar></Navbar>
       <BlogSection></BlogSection>
     </div>

@@ -1,11 +1,9 @@
-import Experience from '../sections/Experience'
-import Header from '../sections/Header'
-import Navbar from '../sections/Navbar'
+import Experience from '../components/Experience'
+import Navbar from '../components/Navbar'
 
 export default function Work() {
   return (
     <div>
-      <Header></Header>
       <Navbar></Navbar>
       <Experience></Experience>
     </div>
