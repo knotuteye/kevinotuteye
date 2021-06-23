@@ -12,15 +12,17 @@ export default function Masthead({}) {
           let color = colors[i % colors.length]
 
           return (
-            <span
-              key={i}
-              className={
-                `text-${color} px-1 py-1 ` +
-                `md:px-2 md:text-white md:bg-${color}`
-              }
-            >
-              {x}
-            </span>
+            <>
+              <span key={i} className={`md:hidden text-${color} px-1 py-1`}>
+                {x}
+              </span>
+              <span
+                key={i + '2'}
+                className={`hidden md:inline px-2 text-white bg-${color} px-1 py-1`}
+              >
+                {x}
+              </span>
+            </>
           )
         })}
       </h1>

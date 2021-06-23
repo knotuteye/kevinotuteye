@@ -1,9 +1,9 @@
 import ProjectsJSON from '../public/json/projects.json'
-import { colors as clrs } from '../Theme'
+import { colors as themeColors } from '../Theme'
 
 export default function Projects({}) {
   const { projects } = ProjectsJSON
-  const colors = Object.keys(clrs).filter((x, i) => i % 2)
+  const colors = Object.keys(themeColors).reverse()
 
   return (
     <div className="flex flex-col p-5  md:px-20 md:py-16 ">
@@ -26,34 +26,35 @@ export default function Projects({}) {
       </div>
       <div className="flex flex-col gap-y-16 md:pl-6">
         <div className="flex flex-col gap-y-7 mt-5">
-          {projects.map((proj, x) => (
-            <div
-              key={proj.name + x}
-              className={`font-heading flex flex-col ml-3 gap-y-1 pl-10 border-dotted border-l-4 border-${
-                colors[x % colors.length]
-              }`}
-            >
-              <div className={`font-bold text-${colors[x % colors.length]}`}>
-                {proj.name}
+          {projects.map((proj, x) => {
+            const color = colors[x % colors.length]
+            return (
+              <div
+                key={proj.name + x}
+                style={{ borderColor: themeColors[color] }}
+                className={`font-heading flex flex-col ml-3 gap-y-1 pl-10 border-dotted border-l-4`}
+              >
+                <div className={`font-bold text-${colors[x % colors.length]}`}>
+                  {proj.name}
+                </div>
+                <a className="text-queenBlue break-words" href={proj.link}>
+                  {proj.link}
+                </a>
+                <div className="my-1 font-body">{proj.about}</div>
+                <div className="flex flex-wrap gap-3">
+                  {proj.technologies.map((tech) => (
+                    <div
+                      key={tech}
+                      style={{ borderColor: themeColors[color] }}
+                      className={`flex h-8 px-3 items-center rounded-sm text-sm border`}
+                    >
+                      {tech}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <a className="text-queenBlue break-words" href={proj.link}>
-                {proj.link}
-              </a>
-              <div className="my-1 font-body">{proj.about}</div>
-              <div className="flex flex-wrap gap-3">
-                {proj.technologies.map((tech) => (
-                  <div
-                    key={tech}
-                    className={`flex h-8 px-3 items-center rounded-sm text-sm border border-${
-                      colors[x % colors.length]
-                    }`}
-                  >
-                    {tech}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

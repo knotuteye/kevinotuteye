@@ -40,10 +40,38 @@ a {
   border-radius: 5rem;
 }
 
-/* redSalsa: '#f94144',
+/* -redSalsa: '#f94144',
       orangeRed: '#f3722c',
       yellowOrange: '#f8961e',
       maizeCrayola: '#f9c74f',
       pistachio: '#90be6d',
       zomp: '#43aa8b',
       queenBlue: '#577590', */
+
+/* .bg-redSalsa {
+  background-color: #f94144;
+}
+
+.bg-orangeRed {
+  background-color: #f3722c;
+}
+
+.bg-yellowOrange {
+  background-color: #f8961e;
+}
+
+.bg-maizeCrayola {
+  background-color: #f9c74f;
+}
+
+.bg-pistachio {
+  background-color: #90be6d;
+}
+
+.bg-zomp {
+  background-color: #43aa8b;
+}
+
+.bg-queenBlue {
+  background-color: #577590;
+} */
