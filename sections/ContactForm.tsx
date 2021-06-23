@@ -26,7 +26,7 @@ export default function ContactForm({ show, setShow }: Props) {
       <div className="flex flex-col">
         <div className="flex w-full h-36">
           {colors.map((x) => (
-            <div className={`flex flex-1 bg-${x}`}></div>
+            <div key={x} className={`flex flex-1 bg-${x}`}></div>
           ))}
         </div>
         <div

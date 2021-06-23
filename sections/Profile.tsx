@@ -2,7 +2,7 @@ export default function Profile({}) {
   return (
     <div id="profile" className="flex flex-col justify-center items-center">
       <div
-        className="flex mt-20 mb-12 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
+        className="flex mt-16 mb-12 rounded-full border-4 border-pistachio bg-maizeCrayola shadow-lg"
         style={{
           height: '15rem',
           width: '15rem',
@@ -29,7 +29,7 @@ export default function Profile({}) {
           <span className="font-bold text-zomp">music.</span>
         </p>
       </div>
-      <div className="flex my-14 gap-x-20">
+      <div className="flex my-14 gap-x-12">
         <a href="https://www.github.com/knotuteye">
           <svg
             role="img"

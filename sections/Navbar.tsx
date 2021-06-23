@@ -52,11 +52,9 @@ export default function Navbar() {
   ]
   return (
     <>
-      <div className="flex items-center py-5 " style={{ padding: '2rem' }}>
-        <div>
-          <Masthead></Masthead>
-        </div>
-        <div className="flex flex-1 gap-x-5 justify-end font-body">
+      <div className="flex items-center md:justify-start pl-2 pt-3 md:p-5">
+        <Masthead></Masthead>
+        <div className="hidden md:flex flex-1 gap-x-5 justify-end font-body ">
           {navButtons.map((btn, i) => (
             <Button
               text={btn.text}
