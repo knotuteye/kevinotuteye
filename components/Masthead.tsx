@@ -6,7 +6,7 @@ export default function Masthead({}) {
   const colors = Object.keys(clrs)
 
   return (
-    <Link href="/">
+    <Link href="/" passHref>
       <h1 className="font-heading text-2xl font-bold  cursor-pointer">
         {logo.split('').map((x, i) => (
           <span

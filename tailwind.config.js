@@ -1,16 +1,22 @@
 const colors = require('tailwindcss/colors')
-const theme = require('./Theme')
 
 module.exports = {
-  purge: [
-    './pages/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './sections/**/*.{js,ts,jsx,tsx}',
-  ],
+  purge: false,
+  // [
+  // './pages/**/*.{js,ts,jsx,tsx}',
+  // './components/**/*.{js,ts,jsx,tsx}',
+  // './sections/**/*.{js,ts,jsx,tsx}',
+  // ],
   darkMode: false, // or 'media' or 'class'
   theme: {
     colors: {
-      ...theme.colors,
+      redSalsa: '#f94144',
+      orangeRed: '#f3722c',
+      yellowOrange: '#f8961e',
+      maizeCrayola: '#f9c74f',
+      pistachio: '#90be6d',
+      zomp: '#43aa8b',
+      queenBlue: '#577590',
       white: colors.white,
     },
     fontFamily: {
