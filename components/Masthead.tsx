@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { colors as clrs } from '../components/Theme'
+import { colors as clrs } from '../Theme'
 
 export default function Masthead({}) {
   const logo = 'kevinotuteye'

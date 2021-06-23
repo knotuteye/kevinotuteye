@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { colors as clrs } from '../components/Theme'
+import { colors as clrs } from '../Theme'
 
 import Button from '../components/Button'
 type Props = {
