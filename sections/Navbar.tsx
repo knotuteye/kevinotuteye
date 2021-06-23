@@ -54,7 +54,9 @@ export default function Navbar() {
   ]
   return (
     <>
-      <div className="flex items-center justify-between md:justify-start px-2 pt-3 md:p-5">
+      <div
+        className="flex items-center sticky top-0 bg-white justify-between md:justify-start px-2 py-3 md:p-5"
+      >
         <Masthead></Masthead>
         <div className="hidden md:flex flex-1 gap-x-5 justify-end font-body ">
           {navButtons.map((btn, i) => (
