@@ -1,9 +1,9 @@
 import ExperienceJSON from '../public/json/experience.json'
-import { colors as clrs } from '../Theme'
+import { colors as themeColors } from '../Theme'
 
 export default function Experience({}) {
   const { experience } = ExperienceJSON
-  const colors = Object.keys(clrs).slice(1)
+  const colors = Object.keys(themeColors).slice(1)
   return (
     <div className="flex flex-col p-5  md:px-20 md:py-16">
       <div className="flex gap-x-3 text-3xl md:text-4xl items-center py-2 md:p-5 text-redSalsa">
@@ -24,63 +24,75 @@ export default function Experience({}) {
         <h1 className="font-heading">Experience</h1>
       </div>
       <div className="flex flex-col gap-y-16 md:pl-6">
-        {experience.map((exp, i) => (
-          <div
-            key={exp.company}
-            className={
-              'flex flex-col ml-4 pl-4 md:pl-16 border-l-2 font-body ' +
-              `border-${colors[i % colors.length]}`
-            }
-          >
+        {experience.map((exp, i) => {
+          const color = colors[i % colors.length]
+          return (
             <div
-              className={`self-end bg-${
-                colors[i % colors.length]
-              } text-sm my-1 px-3 py-0.5 rounded-xl text-white`}
+              key={exp.company}
+              style={{ borderColor: themeColors[color] }}
+              className={
+                'flex flex-col ml-4 pl-4 md:pl-16 border-l-2 font-body '
+              }
             >
-              {exp.startDate + ' - ' + exp.endDate}
-            </div>
-            <div
-              className={`text-lg my-1 font-heading font-bold text-${
-                colors[i % colors.length]
-              } `}
-            >
-              {exp.role}
-            </div>
-            <div className="my-2 font-bold">{exp.company}</div>
-            <div className="text-sm md:text-base">{exp.aboutCompany}</div>
-            <div className="flex flex-col gap-y-7 mt-5">
-              {exp.projects.map((proj, x) => (
-                <div
-                  key={proj.name + x}
-                  className={`flex flex-col ml-3 gap-y-1 pl-5 md:pl-10 border-dotted border-l-4 border-${
-                    colors[i % colors.length]
-                  }`}
-                >
-                  <div className="font-bold">{proj.name}</div>
-                  <a
-                    className="text-queenBlue break-words text-sm md:text-base"
-                    href={proj.link}
-                  >
-                    {proj.link}
-                  </a>
-                  <div className="my-1 text-sm md:text-base">{proj.about}</div>
-                  <div className="flex flex-wrap gap-2 md:gap-3">
-                    {proj.technologies.map((tech) => (
-                      <div
-                        key={tech}
-                        className={`flex px-1 md:h-8 md:px-3 items-center rounded-sm text-sm border border-${
-                          colors[i % colors.length]
-                        }`}
+              <div
+                className={`self-end bg-${
+                  colors[i % colors.length]
+                } text-sm my-1 px-3 py-0.5 rounded-xl text-white`}
+              >
+                {exp.startDate + ' - ' + exp.endDate}
+              </div>
+              <div
+                className={`text-lg my-1 font-heading font-bold text-${
+                  colors[i % colors.length]
+                } `}
+              >
+                {exp.role}
+              </div>
+              <div className="my-2 font-bold">{exp.company}</div>
+              <div className="text-sm md:text-base">{exp.aboutCompany}</div>
+              <div className="flex flex-col gap-y-7 mt-5">
+                {exp.projects.map((proj, x) => {
+                  return (
+                    <div
+                      key={proj.name + x}
+                      style={{
+                        borderColor: themeColors[color],
+                      }}
+                      className={`flex flex-col ml-3 gap-y-1 pl-5 md:pl-10 border-dotted border-l-4`}
+                    >
+                      <div className="font-bold">{proj.name}</div>
+                      <a
+                        className="text-queenBlue break-words text-sm md:text-base"
+                        href={proj.link}
                       >
-                        {tech}
+                        {proj.link}
+                      </a>
+                      <div className="my-1 text-sm md:text-base">
+                        {proj.about}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                      <div className="flex flex-wrap gap-2 md:gap-3">
+                        {proj.technologies.map((tech) => (
+                          <div
+                            key={tech}
+                            style={{
+                              borderColor:
+                                themeColors[colors[i % colors.length]],
+                            }}
+                            className={`flex px-1 md:h-8 md:px-3 items-center rounded-sm text-sm border border-${
+                              colors[i % colors.length]
+                            }`}
+                          >
+                            {tech}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
