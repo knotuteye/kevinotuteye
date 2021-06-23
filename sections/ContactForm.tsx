@@ -21,14 +21,34 @@ export default function ContactForm({ show, setShow }: Props) {
       id="backdrop"
       className="flex shadow-lg h-screen w-screen justify-center items-center fixed top-0"
       onClick={(e) => dismissHandler(e.target as HTMLDivElement)}
-      style={{ backgroundColor: '#000000aa' }}
+      style={{ backgroundColor: '#000000bc' }}
     >
       <div className="flex flex-col">
         <div className="flex w-full h-36">
           {colors.map((x) => (
             <div key={x} className={`flex flex-1 bg-${x}`}></div>
           ))}
+          <div
+            className="text-white absolute right-2 top-2"
+            onClick={() => setShow(false)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
         </div>
+
         <div
           className="flex flex-col bg-white max-w-md px-10 py-10 gap-y-5 font-body"
           style={{ width: '100%' }}
