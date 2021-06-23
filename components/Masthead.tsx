@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { theme } from '../tailwind.config'
+import { colors as clrs } from '../components/Theme'
 
 export default function Masthead({}) {
   const logo = 'kevinotuteye'
-  const colors = Object.keys(theme.colors).filter((x) => !['white'].includes(x))
+  const colors = Object.keys(clrs)
 
   return (
     <Link href="/">

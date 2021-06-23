@@ -1,12 +1,14 @@
 import { Dispatch, SetStateAction } from 'react'
-import { theme } from '../tailwind.config'
+
+import { colors as clrs } from '../components/Theme'
+
 import Button from '../components/Button'
 type Props = {
   show: boolean
   setShow: Dispatch<SetStateAction<boolean>>
 }
 export default function ContactForm({ show, setShow }: Props) {
-  const colors = Object.keys(theme.colors).filter((x) => !['white'].includes(x))
+  const colors = Object.keys(clrs)
 
   function dismissHandler(e: HTMLDivElement) {
     if (e.id === 'backdrop') setShow(false)

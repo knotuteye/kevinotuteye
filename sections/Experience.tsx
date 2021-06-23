@@ -1,12 +1,9 @@
-// TODO: Add screenshot functionality
-
 import ExperienceJSON from '../public/json/experience.json'
-import { theme } from '../tailwind.config'
+import { colors as clrs } from '../components/Theme'
+
 export default function Experience({}) {
   const { experience } = ExperienceJSON
-  const colors = Object.keys(theme.colors).filter(
-    (x, i) => i !== 0 && !['white'].includes(x)
-  )
+  const colors = Object.keys(clrs).slice(1)
   return (
     <div className="flex flex-col p-5  md:px-20 md:py-16">
       <div className="flex gap-x-3 text-3xl md:text-4xl items-center py-2 md:p-5 text-redSalsa">

@@ -1,11 +1,9 @@
 import ProjectsJSON from '../public/json/projects.json'
-import { theme } from '../tailwind.config'
+import { colors as clrs } from '../components/Theme'
 
 export default function Projects({}) {
   const { projects } = ProjectsJSON
-  const colors = Object.keys(theme.colors).filter(
-    (x, i) => i % 2 && i !== 0 && !['white'].includes(x)
-  )
+  const colors = Object.keys(clrs).filter((x, i) => i % 2)
 
   return (
     <div className="flex flex-col p-5  md:px-20 md:py-16 ">
