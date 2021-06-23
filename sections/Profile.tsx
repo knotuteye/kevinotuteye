@@ -27,7 +27,7 @@ export default function Profile({}) {
           <span className="font-bold text-zomp">music.</span>
         </p>
       </div>
-      <div className="flex my-14 gap-x-12">
+      <div className="flex my-10 md:my-14 gap-x-12">
         <a href="https://www.github.com/knotuteye" target="_blank">
           <svg
             role="img"

@@ -12,7 +12,7 @@ export default function Experience({}) {
       <div className="flex gap-x-3 text-3xl md:text-4xl items-center py-2 md:p-5 text-redSalsa">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="mt-1 h-10 w-10"
+          className="mt-1 h-8 w-8 md:h-10 md:w-10"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -55,7 +55,7 @@ export default function Experience({}) {
               {exp.projects.map((proj, x) => (
                 <div
                   key={proj.name + x}
-                  className={`flex flex-col ml-3 gap-y-1 pl-10 border-dotted border-l-4 border-${
+                  className={`flex flex-col ml-3 gap-y-1 pl-5 md:pl-10 border-dotted border-l-4 border-${
                     colors[i % colors.length]
                   }`}
                 >
