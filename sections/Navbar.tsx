@@ -2,10 +2,12 @@ import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
 import Button from '../components/Button'
 import Masthead from '../components/Masthead'
+import MobileMenu from '../components/MobileMenu'
 import ContactForm from './ContactForm'
 
 export default function Navbar() {
   const [showContactForm, setShowContactForm] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const router = useRouter()
   const navButtons = [
     {
@@ -65,7 +67,10 @@ export default function Navbar() {
             ></Button>
           ))}
         </div>
-        <div className="md:hidden border rounded-sm mr-1 cursor-pointer text-queenBlue">
+        <div
+          className="md:hidden border rounded-sm mr-1 cursor-pointer text-queenBlue"
+          onClick={() => setShowMobileMenu(true)}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-8 w-8"
@@ -86,6 +91,11 @@ export default function Navbar() {
         show={showContactForm}
         setShow={setShowContactForm}
       ></ContactForm>
+      <MobileMenu
+        buttons={navButtons}
+        show={showMobileMenu}
+        setShow={setShowMobileMenu}
+      ></MobileMenu>
     </>
   )
 }
