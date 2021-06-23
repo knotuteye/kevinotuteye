@@ -38,7 +38,7 @@ export default function Projects({}) {
               <div className={`font-bold text-${colors[x % colors.length]}`}>
                 {proj.name}
               </div>
-              <a className="text-queenBlue break-words overflow-ellipsis" href={proj.link}>
+              <a className="text-queenBlue break-words" href={proj.link}>
                 {proj.link}
               </a>
               <div className="my-1 font-body">{proj.about}</div>

@@ -8,8 +8,8 @@ export default function Experience({}) {
     (x, i) => i !== 0 && !['white'].includes(x)
   )
   return (
-    <div className="flex flex-col px-20 py-16">
-      <div className="flex gap-x-3 text-4xl items-center p-5 text-redSalsa">
+    <div className="flex flex-col p-5  md:px-20 md:py-16">
+      <div className="flex gap-x-3 text-3xl md:text-4xl items-center py-2 md:p-5 text-redSalsa">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="mt-1 h-10 w-10"
@@ -24,21 +24,21 @@ export default function Experience({}) {
             d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
           />
         </svg>
-        <h1 className="font-heading">Work Experience</h1>
+        <h1 className="font-heading">Experience</h1>
       </div>
-      <div className="flex flex-col gap-y-16">
+      <div className="flex flex-col gap-y-16 md:pl-6">
         {experience.map((exp, i) => (
           <div
             key={exp.company}
             className={
-              'flex flex-col ml-10 pl-24 border-l-2 font-body ' +
+              'flex flex-col ml-4 pl-4 md:pl-16 border-l-2 font-body ' +
               `border-${colors[i % colors.length]}`
             }
           >
             <div
               className={`self-end bg-${
                 colors[i % colors.length]
-              } text-sm px-3 py-0.5 rounded-xl text-white`}
+              } text-sm my-1 px-3 py-0.5 rounded-xl text-white`}
             >
               {exp.startDate + ' - ' + exp.endDate}
             </div>
@@ -50,7 +50,7 @@ export default function Experience({}) {
               {exp.role}
             </div>
             <div className="my-2 font-bold">{exp.company}</div>
-            <div className="">{exp.aboutCompany}</div>
+            <div className="text-sm md:text-base">{exp.aboutCompany}</div>
             <div className="flex flex-col gap-y-7 mt-5">
               {exp.projects.map((proj, x) => (
                 <div
@@ -60,15 +60,18 @@ export default function Experience({}) {
                   }`}
                 >
                   <div className="font-bold">{proj.name}</div>
-                  <a className="text-queenBlue" href={proj.link}>
+                  <a
+                    className="text-queenBlue break-words text-sm md:text-base"
+                    href={proj.link}
+                  >
                     {proj.link}
                   </a>
-                  <div className="my-1">{proj.about}</div>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="my-1 text-sm md:text-base">{proj.about}</div>
+                  <div className="flex flex-wrap gap-2 md:gap-3">
                     {proj.technologies.map((tech) => (
                       <div
                         key={tech}
-                        className={`flex h-8 px-3 items-center rounded-sm text-sm border border-${
+                        className={`flex px-1 md:h-8 md:px-3 items-center rounded-sm text-sm border border-${
                           colors[i % colors.length]
                         }`}
                       >
