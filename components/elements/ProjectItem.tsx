@@ -12,8 +12,7 @@ type Props = {
 }
 
 export default function ProjectItem({ project, index }: Props) {
-  const color =
-    Object.keys(colors)[index % Object.keys(colors).length]
+  const color = Object.keys(colors)[index % Object.keys(colors).length]
 
   return (
     <div
@@ -28,7 +27,9 @@ export default function ProjectItem({ project, index }: Props) {
       <div className="my-1 font-body">{project.about}</div>
       <div className="flex flex-wrap gap-3">
         {project.technologies.map((tech: string) => (
-          <TechItem index={index}>{tech}</TechItem>
+          <TechItem key={tech + index} index={index}>
+            {tech}
+          </TechItem>
         ))}
       </div>
     </div>

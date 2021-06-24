@@ -16,7 +16,7 @@ export default function Experience({}) {
       <ItemizedSectionWrapper>
         {experience.map((exp, i) => {
           return (
-            <WorkItem index={i} workObject={exp}></WorkItem>
+            <WorkItem key={exp.role + i} index={i} workObject={exp}></WorkItem>
           )
         })}
       </ItemizedSectionWrapper>

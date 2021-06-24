@@ -14,7 +14,11 @@ export default function Projects({}) {
       ></PageHeading>
       <ItemizedSectionWrapper>
         {projects.map((proj, i) => (
-          <ProjectItem project={proj} index={i}></ProjectItem>
+          <ProjectItem
+            key={proj.name + i}
+            project={proj}
+            index={i}
+          ></ProjectItem>
         ))}
       </ItemizedSectionWrapper>
     </PageContainer>

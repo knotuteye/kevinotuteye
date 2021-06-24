@@ -19,8 +19,7 @@ type Props = {
 }
 
 export default function WorkItem({ workObject, index }: Props) {
-  const color =
-    Object.keys(colors)[index % Object.keys(colors).length]
+  const color = Object.keys(colors)[index % Object.keys(colors).length]
 
   return (
     <div
@@ -40,7 +39,13 @@ export default function WorkItem({ workObject, index }: Props) {
       <div className="text-sm md:text-base">{workObject.aboutCompany}</div>
       <div className="flex flex-col gap-y-7 mt-5">
         {workObject.projects.map((proj) => {
-          return <ProjectItem project={proj} index={index}></ProjectItem>
+          return (
+            <ProjectItem
+              key={proj.name + index}
+              project={proj}
+              index={index}
+            ></ProjectItem>
+          )
         })}
       </div>
     </div>
