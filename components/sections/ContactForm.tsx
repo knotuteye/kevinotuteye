@@ -1,15 +1,13 @@
 import { Dispatch, SetStateAction } from 'react'
-
-import { colors as clrs } from '../../Theme'
-
+import { colors } from '../../Theme'
 import Button from '../elements/Button'
+
 type Props = {
   show: boolean
   setShow: Dispatch<SetStateAction<boolean>>
 }
-export default function ContactForm({ show, setShow }: Props) {
-  const colors = Object.keys(clrs)
 
+export default function ContactForm({ show, setShow }: Props) {
   function dismissHandler(e: HTMLDivElement) {
     if (e.id === 'backdrop') setShow(false)
   }
@@ -27,7 +25,7 @@ export default function ContactForm({ show, setShow }: Props) {
     >
       <div className="flex flex-col">
         <div className="flex w-full h-36">
-          {colors.map((x) => (
+          {Object.keys(colors).map((x) => (
             <div key={x} className={`flex flex-1 bg-${x}`}></div>
           ))}
           <div
@@ -77,22 +75,8 @@ export default function ContactForm({ show, setShow }: Props) {
           <Button
             text="Send"
             onClick={sendMessage}
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 transform rotate-90"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-            }
+            iconClassName="transform rotate-90"
+            svgPath="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
           ></Button>
         </div>
       </div>

@@ -1,11 +1,18 @@
 type ButtonProps = {
   text: string
-  icon?: JSX.Element
+  iconClassName?: string
+  svgPath?: string
   onClick?: () => void
   alt?: boolean
 }
 
-export default function Button({ text, icon, onClick, alt }: ButtonProps) {
+export default function Button({
+  text,
+  svgPath,
+  iconClassName,
+  onClick,
+  alt,
+}: ButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -16,7 +23,22 @@ export default function Button({ text, icon, onClick, alt }: ButtonProps) {
       } flex items-center justify-between gap-x-2 border-2 px-3 py-2 rounded-md text-sm shadow-md`}
     >
       {text}
-      {icon}
+      {svgPath && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className={'h-5 w-5' + iconClassName}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d={svgPath}
+          />
+        </svg>
+      )}
     </button>
   )
 }
