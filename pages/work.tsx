@@ -1,5 +1,5 @@
-import Experience from '../components/Experience'
-import Navbar from '../components/Navbar'
+import Experience from '../components/sections/Experience'
+import Navbar from '../components/sections/Navbar'
 
 export default function Work() {
   return (

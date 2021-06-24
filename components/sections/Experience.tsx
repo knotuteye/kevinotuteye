@@ -1,5 +1,5 @@
-import ExperienceJSON from '../public/json/experience.json'
-import { colors as themeColors } from '../Theme'
+import ExperienceJSON from '../../public/json/experience.json'
+import { colors as themeColors } from '../../Theme'
 
 export default function Experience({}) {
   const { experience } = ExperienceJSON

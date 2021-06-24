@@ -1,5 +1,5 @@
-import BlogSection from '../components/BlogSection'
-import Navbar from '../components/Navbar'
+import BlogSection from '../components/sections/BlogSection'
+import Navbar from '../components/sections/Navbar'
 
 export default function Blog() {
   return (

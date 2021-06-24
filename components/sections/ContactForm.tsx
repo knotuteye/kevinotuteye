@@ -1,8 +1,8 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { colors as clrs } from '../Theme'
+import { colors as clrs } from '../../Theme'
 
-import Button from '../components/Button'
+import Button from '../elements/Button'
 type Props = {
   show: boolean
   setShow: Dispatch<SetStateAction<boolean>>

@@ -21,8 +21,7 @@ module.exports = {
       white: colors.white,
     },
     fontFamily: {
-      heading: ['Montserrat', 'sans-serif'],
-      body: ['Raleway', 'sans-serif'],
+      ...theme.fontFamily,
     },
     extend: {},
   },

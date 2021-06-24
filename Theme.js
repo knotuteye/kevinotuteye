@@ -8,4 +8,8 @@ module.exports = {
     zomp: '#43aa8b',
     queenBlue: '#577590',
   },
+  fontFamily: {
+    heading: ['Montserrat', 'sans-serif'],
+    body: ['Raleway', 'sans-serif'],
+  },
 }

@@ -1,8 +1,8 @@
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
-import Button from '../components/Button'
-import Masthead from '../components/Masthead'
-import MobileMenu from '../components/MobileMenu'
+import Button from '../elements/Button'
+import Masthead from '../elements/Masthead'
+import MobileMenu from './MobileMenu'
 import ContactForm from './ContactForm'
 
 export default function Navbar() {

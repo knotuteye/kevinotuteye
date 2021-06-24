@@ -1,5 +1,5 @@
-import Navbar from '../components/Navbar';
-import ProjectSection from "../components/ProjectSection";
+import Navbar from '../components/sections/Navbar'
+import ProjectSection from '../components/sections/ProjectSection'
 
 export default function Projects() {
   return (

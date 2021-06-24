@@ -1,5 +1,5 @@
-import ProjectsJSON from '../public/json/projects.json'
-import { colors as themeColors } from '../Theme'
+import ProjectsJSON from '../../public/json/projects.json'
+import { colors as themeColors } from '../../Theme'
 
 export default function Projects({}) {
   const { projects } = ProjectsJSON
