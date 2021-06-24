@@ -13,7 +13,7 @@ type Props = {
 
 export default function ProjectItem({ project, index }: Props) {
   const color =
-    Object.keys(colors).reverse()[index % Object.keys(colors).length]
+    Object.keys(colors)[index % Object.keys(colors).length]
 
   return (
     <div

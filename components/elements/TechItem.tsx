@@ -7,7 +7,7 @@ type Props = {
 
 export default function TechItem({ children, index }: Props) {
   const color =
-    Object.keys(colors).reverse()[index % Object.keys(colors).length]
+    Object.keys(colors)[index % Object.keys(colors).length]
   return (
     <div
       key={children}

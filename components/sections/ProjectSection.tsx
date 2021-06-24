@@ -1,5 +1,4 @@
 import ProjectsJSON from '../../public/json/projects.json'
-import { colors as themeColors } from '../../Theme'
 import ItemizedSectionWrapper from '../elements/ItemizedSectionWrapper'
 import PageContainer from '../elements/PageContainer'
 import PageHeading from '../elements/PageHeading'
@@ -7,8 +6,6 @@ import ProjectItem from '../elements/ProjectItem'
 
 export default function Projects({}) {
   const { projects } = ProjectsJSON
-  const colors = Object.keys(themeColors).reverse()
-
   return (
     <PageContainer>
       <PageHeading
