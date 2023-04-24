@@ -60,7 +60,7 @@
         {
           "name": "Learn With Mochi",
           "link": "https://learnwithmochi.com/",
-          "about": "",
+          "about": "Mochi is a simple programming kit to teach kids software concepts interactively. Built the complete web presence for Mochi.",
           "technologies": [
             "NextJS",
             "Express",
@@ -77,7 +77,7 @@
         {
           "name": "Robotics Kit",
           "link": "https://learnwithmochi.com/robotics",
-          "about": "",
+          "about": "This robotics kit teaches kids the basics of colours, letters, shapes and physics. Built the web presence, analytics and payment features.",
           "technologies": [
             "NextJS",
             "Express",
