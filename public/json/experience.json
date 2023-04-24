@@ -6,12 +6,123 @@
     "startDate": "",
     "endDate": "",
     "projects": [
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] },
-      { "name": "", "link": "", "about": "", "technologies": [] }
+      {
+        "name": "",
+        "link": "",
+        "about": "",
+        "technologies": []
+      },
+      {
+        "name": "",
+        "link": "",
+        "about": "",
+        "technologies": []
+      },
+      {
+        "name": "",
+        "link": "",
+        "about": "",
+        "technologies": []
+      }
     ]
   },
   "experience": [
+    {
+      "role": "SENIOR SOFTWARE ENGINEER",
+      "company": "RETAIN HEALTH",
+      "aboutCompany": "Retain Health is the operator of a healthcare platform intended to identify Alzheimer's risk factors and help build brain-healthy habits. The company uses clinical evidence to offer mobile care to make brain-healthy lifestyle changes, enabling clinicians to treat memory-related diseases.",
+      "startDate": "August 2021",
+      "endDate": "Present",
+      "projects": [
+        {
+          "name": "Retain",
+          "link": "https://retainhealth.com",
+          "about": "I serve as a Senior Software Engineer responsible for spearheading the implementation of critical features for the company's flagship product using AngularJS, Express, and AWS RDS, among other tools. Leveraging my expertise in serverless architecture (including AWS Lambda, API Gateway, and AWS WAF), I work diligently to ensure the product's scalability, stability, and security while adhering to strict NDA regulations. In addition to technical responsibilities, I collaborate with a consultant from the U.S. Food and Drug Administration to ensure alignment between the product and software development processes and FDA regulations. By doing so, I ensure that the company's product remains compliant and up-to-date with industry standards. As a leader in the organization, I also play a critical role in recruiting top talent. By conducting interviews and evaluating potential candidates, I help to build and maintain a talented and productive team that can deliver the best results for the company.",
+          "technologies": [
+            "AngularJS",
+            "Express.js",
+            "MySQL",
+            "AWS Lambda",
+            "AWS S3",
+            "AWS Cloudwatch",
+            "Bootstrap"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "Software Engineer",
+      "company": "My Creative Box",
+      "aboutCompany": "My Creative Box, an e-commerce company, provides curious kids with the ultimate hands-on fun learning experience in one convenient box - delivered. ",
+      "startDate": "May 2021",
+      "endDate": "September 2021",
+      "projects": [
+        {
+          "name": "Learn With Mochi",
+          "link": "https://learnwithmochi.com/",
+          "about": "",
+          "technologies": [
+            "NextJS",
+            "Express",
+            "Stripe",
+            "PayPal",
+            "Typescript",
+            "Tailwind CSS",
+            "Unit Testing",
+            "E2E Testing",
+            "Github Actions CI/CD",
+            "REST/RESTful APIs"
+          ]
+        },
+        {
+          "name": "Robotics Kit",
+          "link": "https://learnwithmochi.com/robotics",
+          "about": "",
+          "technologies": [
+            "NextJS",
+            "Express",
+            "Stripe",
+            "PayPal",
+            "Typescript",
+            "Tailwind CSS",
+            "Unit Testing",
+            "E2E Testing",
+            "Github Actions CI/CD",
+            "REST/RESTful APIs"
+          ]
+        },
+        {
+          "name": "KiwiLearn",
+          "link": "https://kiwilearn.org/",
+          "about": "KiwiLearn is a learning exchange that connects teachers and learners in different parts of Aotearoa. Kiwi Learn democratises educational opportunities to give students in every part of New Zealand access to the best teachers no matter where they live.",
+          "technologies": [
+            "NextJS",
+            "Express",
+            "Typescript",
+            "Tailwind CSS",
+            "Enzyme",
+            "REST/RESTful APIs"
+          ]
+        },
+        {
+          "name": "EHF PRV Scoring Calculator",
+          "link": "https://ehf.nzvc.co.nz/",
+          "about": "This web application is set up for Edmund Hillary fellows to calculate their PRV points. The calculator is created based on the EHF document and this document is the ground truth. The calculator is a tool to make adding and sharing contributions much easier.",
+          "technologies": [
+            "Puppeteer",
+            "AWS S3",
+            "NextJS",
+            "Express",
+            "Typescript",
+            "Tailwind CSS",
+            "Unit Testing",
+            "E2E Testing",
+            "Github Actions CI/CD",
+            "REST/RESTful APIs"
+          ]
+        }
+      ]
+    },
     {
       "role": "FULLSTACK DEVELOPER",
       "company": "JLS TRADING CO., USA",
@@ -71,7 +182,6 @@
     },
     {
       "role": "FULLSTACK DEVELOPER",
-
       "company": "ASQII LLC, GH",
       "aboutCompany": "Asqii LLC is a software development company based in Kumasi, Ghana. I worked closely with Engineering Managers to strategize product design and implementation.",
       "startDate": "June 2020",
@@ -149,7 +259,12 @@
           "name": "ACES Website",
           "link": "",
           "about": "Designed and defined a design system for ACES. Designed a custom WordPress theme, developed and maintained the website and blog of the Association of Computer Engineering Students in the Kwame Nkrumah University of Science and Technology.",
-          "technologies": ["MySQL", "PHP", "CSS3", "WordPress"]
+          "technologies": [
+            "MySQL",
+            "PHP",
+            "CSS3",
+            "WordPress"
+          ]
         }
       ]
     }
