@@ -11,12 +11,11 @@ export default function Navbar() {
   const router = useRouter()
   const navButtons = [
     {
-      text: 'Blog',
+      text: 'Gallery',
       onClick: () => {
-        router.push('blog')
+        router.push('gallery')
       },
-    },
-    {
+    },{
       text: 'Work',
       onClick: () => {
         router.push('work')
@@ -26,6 +25,12 @@ export default function Navbar() {
       text: 'Projects',
       onClick: () => {
         router.push('projects')
+      },
+    },
+    {
+      text: 'Blog',
+      onClick: () => {
+        router.push('blog')
       },
     },
     {
