@@ -1,50 +1,44 @@
 {
   "template": {
-    "name": "GREEDY ALGORITHM FOR SCHEDULING LECTURES BY SOFT CONSTRAINT OPTIMIZATION FOR COLLEGE OF ENGINEERING, KNUST",
+    "name": "",
     "link": "",
-    "about": "An implementation of a greedy algorithm in Java which schedules lectures into a workable weekly timetable, taking into consideration a weighted number of soft constraints including the comfort of lecturers and students and the distance between lecture halls. This project solves an NP-hard problem and is set to replace the manual method of scheduling currently employed. This project is still in testing but has so far reduced the time taken for creating workable timetables for the College of Engineering at Kwame Nkrumah University of Science and Technology from 1 week to 1 minute. The front end was built from scratch in Typescript with React and Tailwind CSS.",
-    "technologies": [
-      "Typescript",
-      "CSS3",
-      "REST/RESTful APIs",
-      "Firebase",
-      "Spring Framework",
-      "React",
-      "Java"
-    ]
+    "about": "",
+    "technologies": []
   },
   "projects": [
     {
-      "name": "GREEDY ALGORITHM FOR SCHEDULING LECTURES BY SOFT CONSTRAINT OPTIMIZATION FOR COLLEGE OF ENGINEERING, KNUST",
+      "name": "KRONOS — GREEDY ALGORITHM FOR SCHEDULING LECTURES BY SOFT CONSTRAINT OPTIMIZATION, KNUST",
       "link": "",
-      "about": "An implementation of a greedy algorithm in Java which schedules lectures into a workable weekly timetable, taking into consideration a weighted number of soft constraints including the comfort of lecturers and students and the distance between lecture halls. This project solves an NP-hard problem and is set to replace the manual method of scheduling currently employed. This project is still in testing but has so far reduced the time taken for creating workable timetables for the College of Engineering at Kwame Nkrumah University of Science and Technology from 1 week to 1 minute. The front end was built from scratch in Typescript with React and Tailwind CSS.",
+      "about": "An implementation of a greedy algorithm which schedules lectures into a workable weekly timetable, taking into consideration a weighted number of soft constraints including the comfort of lecturers and students and the distance between lecture halls. The project solves an NP-hard problem and replaced the manual method of scheduling, cutting timetable generation for the College of Engineering at Kwame Nkrumah University of Science and Technology from 2 months to 10 minutes. It has been adopted by the College of Engineering as its official scheduling tool. The front end was built from scratch in Typescript with React and Tailwind CSS, backed by a Spring Boot service deployed on AWS EC2.",
       "technologies": [
         "Typescript",
-        "CSS3",
-        "REST/RESTful APIs",
-        "Firebase",
-        "Spring Framework",
         "React",
-        "Java"
+        "Tailwind CSS",
+        "Java",
+        "Spring Boot",
+        "AWS EC2",
+        "REST/RESTful APIs",
+        "Algorithms and Data Structures"
       ]
     },
     {
       "name": "GODSEYE VIDEO SURVEILLANCE BACKEND",
       "link": "",
-      "about": "The backend for a surveillance system allows parents to access live feeds from Raspberry PI-based cameras in their wards’ classrooms. It houses the API endpoints for in-house authentication and OAuth, and routines to stream camera frame to authenticated API consumers. It also employs compression of frames for transmission. This project was deployed on AWS and built as a proof of concept for a local company seeking to develop a product like Ring.",
+      "about": "The backend for a surveillance system allowing parents to access live feeds from Raspberry Pi-based cameras in their wards' classrooms. It houses the API endpoints for in-house authentication and OAuth, motion detection, and routines to stream camera frames to authenticated API consumers. It also employs compression of frames for transmission. This project was deployed as a proof of concept for a local edtech initiative seeking to develop a product like Ring.",
       "technologies": [
         "JavaScript ES6",
         "REST/RESTful APIs",
         "Node.js",
         "Express.js",
         "MongoDB",
-        "OAuth APIs"
+        "OAuth APIs",
+        "Raspberry Pi"
       ]
     },
     {
       "name": "WOPRI",
       "link": "https://knotuteye.github.io/wopri",
-      "about": "A trivia quiz game developed as a Progressive Web Application (PWA). Built with performance and user experience in mind, it was personal experiment on accessibility and extreme optimization for PWAs. It has a Lighthouse performance rating of 99%.",
+      "about": "A trivia quiz game developed as a Progressive Web Application (PWA). Built with performance and user experience in mind, it was a personal experiment on accessibility and extreme optimization for PWAs. It has a Lighthouse performance rating of 99%.",
       "technologies": [
         "CSS3",
         "SEO",

@@ -1,0 +1,99 @@
+{
+  "summary": "Senior Full-Stack Software Engineer with 7+ years building cloud-native, HIPAA-compliant healthcare platforms — from a consumer app with 60,000+ users to a clinician-facing EMR supporting a 5,000+ patient clinical trial at 99.99% uptime. I own products end-to-end and mentor engineers across remote, cross-continental teams.",
+  "education": [
+    {
+      "qualification": "BSc, Computer Engineering",
+      "institution": "Kwame Nkrumah University of Science and Technology (KNUST)",
+      "location": "Kumasi, GH",
+      "year": "2020",
+      "highlights": [
+        "Graduated with First Class Honors (Top 5%) and Excellent Student status."
+      ]
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Google Cloud Practitioner",
+      "year": "2019"
+    },
+    {
+      "name": "Huawei Certified Network Associate",
+      "year": "2017"
+    }
+  ],
+  "skills": [
+    {
+      "category": "Cloud & DevOps",
+      "items": [
+        "AWS Lambda",
+        "AWS CDK",
+        "AWS RDS",
+        "AWS S3",
+        "AWS API Gateway",
+        "AWS EC2",
+        "Google Cloud",
+        "Firebase",
+        "Github Actions",
+        "Gitlab CI",
+        "Docker"
+      ]
+    },
+    {
+      "category": "Languages",
+      "items": ["Typescript", "JavaScript", "Python", "Java", "SQL"]
+    },
+    {
+      "category": "Frameworks",
+      "items": [
+        "React",
+        "Next.js",
+        "AngularJS",
+        "Vue.js",
+        "React Native",
+        "Flutter",
+        "Express",
+        "Spring Boot",
+        "Tailwind CSS"
+      ]
+    },
+    {
+      "category": "Databases",
+      "items": ["MySQL", "MongoDB"]
+    },
+    {
+      "category": "Testing",
+      "items": ["Jest", "Enzyme", "Cypress", "Puppeteer"]
+    },
+    {
+      "category": "Leadership & Collaboration",
+      "items": [
+        "Technical ownership",
+        "Mentorship",
+        "Interviewing",
+        "Remote cross-continental collaboration"
+      ]
+    }
+  ],
+  "recognition": [
+    {
+      "title": "Excellent Student",
+      "detail": "Dept. of Computer Engineering, KNUST",
+      "year": "2020, 2018"
+    },
+    {
+      "title": "1st Place, Best App Category",
+      "detail": "MTN Apps Challenge V4.0",
+      "year": "2017"
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "proficiency": "Native"
+    },
+    {
+      "language": "French",
+      "proficiency": "Proficient"
+    }
+  ]
+}

@@ -11,6 +11,12 @@ export default function Navbar() {
   const router = useRouter()
   const navButtons = [
     {
+      text: 'About',
+      onClick: () => {
+        router.push('about')
+      },
+    },
+    {
       text: 'Blog',
       onClick: () => {
         router.push('blog')

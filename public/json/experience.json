@@ -29,38 +29,80 @@
   "experience": [
     {
       "role": "SENIOR SOFTWARE ENGINEER",
-      "company": "RETAIN HEALTH",
-      "aboutCompany": "Retain Health is the operator of a healthcare platform intended to identify Alzheimer's risk factors and help build brain-healthy habits. The company uses clinical evidence to offer mobile care to make brain-healthy lifestyle changes, enabling clinicians to treat memory-related diseases.",
+      "company": "RETAIN HEALTH, BOSTON, MA (REMOTE)",
+      "aboutCompany": "Retain Health is the operator of a HIPAA-compliant healthcare platform intended to identify Alzheimer's risk factors and help build brain-healthy habits. The company uses clinical evidence to offer mobile care to make brain-healthy lifestyle changes, enabling clinicians to treat memory-related diseases. I own and build across all three of the company's core products.",
       "startDate": "August 2021",
       "endDate": "Present",
       "projects": [
         {
-          "name": "Retain",
+          "name": "RetainYourBrain — Consumer App",
           "link": "https://retainhealth.com",
-          "about": "I serve as a Senior Software Engineer responsible for spearheading the implementation of critical features for the company's flagship product using AngularJS, Express, and AWS RDS, among other tools. Leveraging my expertise in serverless architecture (including AWS Lambda, API Gateway, and AWS WAF), I work diligently to ensure the product's scalability, stability, and security while adhering to strict NDA regulations. In addition to technical responsibilities, I collaborate with a consultant from the U.S. Food and Drug Administration to ensure alignment between the product and software development processes and FDA regulations. By doing so, I ensure that the company's product remains compliant and up-to-date with industry standards. As a leader in the organization, I also play a critical role in recruiting top talent. By conducting interviews and evaluating potential candidates, I help to build and maintain a talented and productive team that can deliver the best results for the company.",
+          "about": "The company's flagship consumer app, with 60,000+ regular users. I developed and own the Health Profile system, including its reusable custom UI graph components and the Brain Health Report export feature. I am currently leading the app's migration from AngularJS to React Native.",
           "technologies": [
+            "React Native",
             "AngularJS",
+            "Typescript",
             "Express.js",
             "MySQL",
+            "REST/RESTful APIs",
+            "UI Design"
+          ]
+        },
+        {
+          "name": "RetainMD Clinician Portal (EMR)",
+          "link": "",
+          "about": "A clinician-facing EMR supporting a 5,000+ patient clinical trial. I delivered the Patient Report v3 workspace — a multi-tab clinician experience spanning Health Profile, Insights, Clinician Notes and Recommended Routines, with live report preview — then extended the pipeline with patient-facing report generation and a clinician review/sign-off workflow including report status transitions. I also designed the clinical insights authoring system (reusable smart phrases, Boston Heart lab integration) and the clinician dashboard for managing assigned patients with Calendly scheduling.",
+          "technologies": [
+            "React",
+            "Typescript",
             "AWS Lambda",
+            "AWS API Gateway",
+            "AWS RDS",
+            "REST/RESTful APIs",
+            "HIPAA Compliance"
+          ]
+        },
+        {
+          "name": "Internal Admin Portal",
+          "link": "",
+          "about": "The internal portal used to run the platform's programs and clinical content. I built its content and media tooling, giving non-engineering teams direct control over what ships to patients and clinicians.",
+          "technologies": [
+            "React",
+            "Typescript",
             "AWS S3",
+            "Express.js",
+            "MySQL",
+            "REST/RESTful APIs"
+          ]
+        },
+        {
+          "name": "Shared Serverless Platform & FDA Compliance Pipeline",
+          "link": "",
+          "about": "I architected and maintain the serverless AWS backend shared by all three products, achieving 99.99% uptime. Partnering with the FDA compliance team, I integrated regulatory validation directly into CI/CD, accelerating release cycles by 3 months and supporting a 5,000+ patient clinical trial through a successful nationwide launch. Alongside this I have interviewed 20+ candidates and mentored junior developers on secure API design and backend architecture.",
+          "technologies": [
+            "AWS Lambda",
+            "AWS CDK",
+            "AWS RDS",
+            "AWS S3",
+            "AWS API Gateway",
             "AWS Cloudwatch",
-            "Bootstrap"
+            "Github Actions CI/CD",
+            "Typescript"
           ]
         }
       ]
     },
     {
-      "role": "Software Engineer",
-      "company": "My Creative Box",
-      "aboutCompany": "My Creative Box, an e-commerce company, provides curious kids with the ultimate hands-on fun learning experience in one convenient box - delivered. ",
-      "startDate": "May 2021",
-      "endDate": "September 2021",
+      "role": "SOFTWARE ENGINEER (CONTRACT)",
+      "company": "MY CREATIVITY BOX INC., AUCKLAND, NZ",
+      "aboutCompany": "My Creativity Box, an e-commerce company, provides curious kids with the ultimate hands-on fun learning experience in one convenient box - delivered. I led the transition from managed Shopify sites to custom web applications on Vercel, established the CI/CD and testing practice, and automated the company's reporting.",
+      "startDate": "May 2020",
+      "endDate": "August 2021",
       "projects": [
         {
           "name": "Learn With Mochi",
           "link": "https://learnwithmochi.com/",
-          "about": "Mochi is a simple programming kit to teach kids software concepts interactively. Built the complete web presence for Mochi.",
+          "about": "Mochi is a simple programming kit to teach kids software concepts interactively. Built the complete web presence for Mochi, moving it off Shopify onto a custom Next.js and ExpressJS application with PayPal and Stripe checkout. Established the GitHub Actions CI/CD pipeline and the E2E test suite in Cypress, reaching 80%+ coverage.",
           "technologies": [
             "NextJS",
             "Express",
@@ -68,7 +110,7 @@
             "PayPal",
             "Typescript",
             "Tailwind CSS",
-            "Unit Testing",
+            "Cypress",
             "E2E Testing",
             "Github Actions CI/CD",
             "REST/RESTful APIs"
@@ -77,7 +119,7 @@
         {
           "name": "Robotics Kit",
           "link": "https://learnwithmochi.com/robotics",
-          "about": "This robotics kit teaches kids the basics of colours, letters, shapes and physics. Built the web presence, analytics and payment features.",
+          "about": "This robotics kit teaches kids the basics of colours, letters, shapes and physics. Built the web presence, analytics and payment features, improving click-through rate by 15% through Analytics and Klaviyo integration.",
           "technologies": [
             "NextJS",
             "Express",
@@ -85,8 +127,7 @@
             "PayPal",
             "Typescript",
             "Tailwind CSS",
-            "Unit Testing",
-            "E2E Testing",
+            "Klaviyo",
             "Github Actions CI/CD",
             "REST/RESTful APIs"
           ]
@@ -100,22 +141,21 @@
             "Express",
             "Typescript",
             "Tailwind CSS",
-            "Enzyme",
+            "Cypress",
             "REST/RESTful APIs"
           ]
         },
         {
           "name": "EHF PRV Scoring Calculator",
           "link": "https://ehf.nzvc.co.nz/",
-          "about": "This web application is set up for Edmund Hillary fellows to calculate their PRV points. The calculator is created based on the EHF document and this document is the ground truth. The calculator is a tool to make adding and sharing contributions much easier.",
+          "about": "This web application is set up for Edmund Hillary fellows to calculate their PRV points. The calculator is created based on the EHF document and this document is the ground truth. The calculator is a tool to make adding and sharing contributions much easier. Automated its PDF report generation with Puppeteer on Google Cloud, saving 10+ hours per week.",
           "technologies": [
             "Puppeteer",
-            "AWS S3",
+            "Google Cloud Platform",
             "NextJS",
             "Express",
             "Typescript",
             "Tailwind CSS",
-            "Unit Testing",
             "E2E Testing",
             "Github Actions CI/CD",
             "REST/RESTful APIs"
@@ -124,51 +164,16 @@
       ]
     },
     {
-      "role": "FULLSTACK DEVELOPER",
-      "company": "JLS TRADING CO., USA",
-      "aboutCompany": "JLS Trading Company is an Amazon Seller Partner which manages private label brands in nearly every consumer category from toys to tools to office products to gourmet food. I worked closely with Process Managers and Product Officers to implement solutions to optimize business processes.",
-      "startDate": "October 2020",
-      "endDate": "Present",
-      "projects": [
-        {
-          "name": "JLS ERP",
-          "link": "https://www.jlserp.com",
-          "about": "A SaaS product that enables users to track warehouse or factory inventory, employees, and assets. Built standalone components in React Typescript for the front-end application of the new SaaS product. Wrote exhaustive unit and integration tests in Jest and Enzyme. Wrote documentation for standalone component packages.\nThe company is on track to release the first public beta of the SaaS product. This project is spearheading the company's efforts to diversify its operations.",
-          "technologies": [
-            "Express.js",
-            "React",
-            "Typescript",
-            "CSS3",
-            "Jest",
-            "Unit Testing",
-            "REST/RESTful APIs"
-          ]
-        },
-        {
-          "name": "Warehouse Digitization",
-          "link": "",
-          "about": "Led the effort to automate and optimize warehouse processes. Developed algorithms in Typescript for optimizing warehouse traversal when fulfilling pick lists. Developed algorithms in Typescript for generating digital addresses for areas within warehouses. Performed exhaustive unit and integration testing with Jest.\nSlashed fuel costs by 35% and order fulfillment time drastically. Improved inventory management by warehouse zoning.",
-          "technologies": [
-            "Typescript",
-            "Algorithms and Data Structures",
-            "REST/RESTful APIs",
-            "Optimization",
-            "Problem Solving"
-          ]
-        }
-      ]
-    },
-    {
-      "role": "LEAD MOBILE APP DEVELOPER",
-      "company": "WINK INITIATIVES, GH",
-      "aboutCompany": "Wink Initiatives is a collaborative company that explores ideas of young people and helps to develop them into businesses and initiatives that help the community. I led a team of 4 developers to build a blood donation app as part of the company's social initiatives.",
+      "role": "LEAD MOBILE DEVELOPER (PART-TIME, CONCURRENT)",
+      "company": "WINK INITIATIVES, KUMASI, GH",
+      "aboutCompany": "Wink Initiatives is a collaborative company that explores ideas of young people and helps to develop them into businesses and initiatives that help the community. I led a team of 4 developers to build a blood donation app as part of the company's social initiatives, alongside my contract engineering work.",
       "startDate": "January 2020",
       "endDate": "January 2021",
       "projects": [
         {
           "name": "Pints App",
           "link": "https://play.google.com/store/apps/details?id=com.pint&hl=en&gl=US",
-          "about": "Pint is a mobile app that has the primary function of taking requests from people who need blood donation, matching the blood group of the requester with eligible donors on the app, exchanging contacts between the wiling donor and the blood requester, allowing people to volunteer as blood donors (on standby to be contacted whenever there is an urgent need). This is to help people who are in dire need of blood find people who are willing to donate blood.The early demos of the application attracted investor and media attention as well as the Ghana Medical Association.",
+          "about": "Pints is a mobile app that has the primary function of taking requests from people who need blood donation, matching the blood group of the requester with eligible donors on the app, exchanging contacts between the willing donor and the blood requester, and allowing people to volunteer as blood donors (on standby to be contacted whenever there is an urgent need). This is to help people who are in dire need of blood find people who are willing to donate blood. The app onboarded 1,000+ users, and its early demos drew attention from investors, the media and the Ghana Medical Association.",
           "technologies": [
             "Google Cloud Platform",
             "Android",
@@ -177,51 +182,52 @@
             "React Native",
             "UI Design"
           ]
-        }
-      ]
-    },
-    {
-      "role": "FULLSTACK DEVELOPER",
-      "company": "ASQII LLC, GH",
-      "aboutCompany": "Asqii LLC is a software development company based in Kumasi, Ghana. I worked closely with Engineering Managers to strategize product design and implementation.",
-      "startDate": "June 2020",
-      "endDate": "October 2020",
-      "projects": [
+        },
         {
-          "name": "Asset Manager NCA",
+          "name": "Lymph Component System",
           "link": "",
-          "about": "Developed bespoke fixed asset management software for the National Communications Authority of Ghana using React, Typescript, Express, and TypeORM according to MVC architecture. Provisioned a CI/CD pipeline with Gitlab CI and Heroku. Performed exhaustive unit and integration testing with Jest and Enzyme. Deployed on a Linux server and performed technical training and troubleshooting on the developed asset management system.",
+          "about": "An internal component system I created to standardise the look and behaviour of Wink's products. It was reused across 3 internal apps, cutting the time needed to stand up a new one to a fraction of what it had been.",
           "technologies": [
-            "React",
+            "React Native",
             "Typescript",
-            "Express.js",
-            "CSS3",
-            "MySQL",
-            "Node.js",
-            "Integration Testing,"
+            "UI Design",
+            "Component Library"
           ]
         }
       ]
     },
     {
-      "role": "LEAD FRONTEND ENGINEER",
-      "company": "TRUCKRSOFT TECHNOLOGIES, GH",
-      "aboutCompany": "A marketplace app for listing and booking of 3rd party logistics truck services.",
-      "startDate": "July 2019",
-      "endDate": "September 2019",
+      "role": "FULL STACK DEVELOPER",
+      "company": "JLS TRADING CO., CHARLOTTE, NC",
+      "aboutCompany": "JLS Trading Company is an Amazon Seller Partner which manages private label brands in nearly every consumer category from toys to tools to office products to gourmet food. I worked closely with Process Managers and Product Officers to implement solutions to optimize business processes.",
+      "startDate": "January 2019",
+      "endDate": "May 2020",
       "projects": [
         {
-          "name": "Truckr Component Library + Website",
-          "link": "https://www.truckrtech.com",
-          "about": "Developed reusable components in Vue and React for company projects. Translated UI design, animations, and mockups in Figma into web components. Performed extensive unit testing with Jest and Enzyme. Led the documentation of the component library. Composed the company's website from the created component library.",
+          "name": "JLS ERP",
+          "link": "https://www.jlserp.com",
+          "about": "A SaaS product that enables users to track warehouse or factory inventory, employees, and assets. Developed standalone modules in React and Typescript for the front-end application of the new SaaS product. Wrote exhaustive unit and integration tests in Jest and Enzyme, and wrote the documentation for the standalone component packages.\nThe project spearheaded the company's efforts to diversify its operations.",
           "technologies": [
-            "JavaScript",
-            "Vue.js",
+            "Express.js",
+            "React",
+            "Typescript",
             "CSS3",
-            "HTML",
             "Jest",
-            "Figma",
-            "React"
+            "Enzyme",
+            "Unit Testing",
+            "REST/RESTful APIs"
+          ]
+        },
+        {
+          "name": "Warehouse Digitization",
+          "link": "",
+          "about": "Led the effort to automate and optimize warehouse processes. Implemented a Typescript routing algorithm optimizing warehouse traversal in 3 dimensions when fulfilling pick lists, plus algorithms for generating digital addresses for areas within warehouses. Performed exhaustive unit and integration testing with Jest.\nReduced forklift fuel costs by 35% and improved order fulfillment time. Improved inventory management by warehouse zoning.",
+          "technologies": [
+            "Typescript",
+            "Algorithms and Data Structures",
+            "REST/RESTful APIs",
+            "Optimization",
+            "Problem Solving"
           ]
         }
       ]
@@ -249,6 +255,30 @@
       ]
     },
     {
+      "role": "FULL STACK INTERN",
+      "company": "ASQII LTD, KUMASI, GH",
+      "aboutCompany": "Asqii Ltd is a software development company based in Kumasi, Ghana. I worked closely with Engineering Managers to strategize product design and implementation.",
+      "startDate": "June 2018",
+      "endDate": "October 2018",
+      "projects": [
+        {
+          "name": "Asset Manager NCA",
+          "link": "",
+          "about": "Delivered bespoke fixed asset management software for the National Communications Authority of Ghana using React, Typescript, Express, and TypeORM according to MVC architecture. Provisioned a CI/CD pipeline with Gitlab CI and Heroku. Performed exhaustive unit and integration testing with Jest and Enzyme. Deployed on a Linux server and performed technical training and troubleshooting on the delivered system; the follow-on training led to an additional contract.",
+          "technologies": [
+            "React",
+            "Typescript",
+            "Express.js",
+            "TypeORM",
+            "MySQL",
+            "Node.js",
+            "Gitlab CI",
+            "Integration Testing"
+          ]
+        }
+      ]
+    },
+    {
       "role": "LEAD WEB DEVELOPER",
       "company": "ACES - KNUST",
       "aboutCompany": "The Association of Computer Engineering Students is a student group representing the interests of Computer Engineering students in Kwame Nkrumah University of Science and Technology. I led a team of 4 developers delegating tasks in weekly sprints.",
@@ -264,6 +294,30 @@
             "PHP",
             "CSS3",
             "WordPress"
+          ]
+        }
+      ]
+    },
+    {
+      "role": "SOFTWARE INTERN",
+      "company": "TRUCKRSOFT TECHNOLOGIES, ACCRA, GH",
+      "aboutCompany": "A marketplace app for listing and booking of 3rd party logistics truck services.",
+      "startDate": "July 2017",
+      "endDate": "October 2017",
+      "projects": [
+        {
+          "name": "Truckr Component Library + Website",
+          "link": "https://www.truckrtech.com",
+          "about": "Created 20+ reusable UI components in Vue and React from Figma designs, accelerating delivery by 75%. Translated UI designs, animations, and mockups in Figma into web components and reached 90%+ test coverage with Jest and Enzyme. Led the documentation of the component library and composed the company's website from it.",
+          "technologies": [
+            "JavaScript",
+            "Vue.js",
+            "React",
+            "CSS3",
+            "HTML",
+            "Jest",
+            "Enzyme",
+            "Figma"
           ]
         }
       ]
