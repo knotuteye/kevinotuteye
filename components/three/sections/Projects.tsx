@@ -1,25 +1,19 @@
 import { useFrame } from '@react-three/fiber'
-import { useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { projects, wrap } from '../../../lib/content'
-import {
-  getWorldState,
-  setFocus,
-  setHovered,
-  toWorld,
-  WORLD_YAW,
-  ZONES,
-} from '../../../lib/world'
+import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
 import GroundText from '../GroundText'
 import GroundShadow from '../Shadow'
+import { useNearest } from '../useNearest'
 
 /**
- * Projects, as a row of standing boards you walk the camera along.
+ * Projects, as a row of standing boards you drive along.
  *
  * Boards stand upright rather than lying flat — they are the one thing in the
  * world with a "face", which is what makes them read as work to be looked at
- * rather than terrain to be crossed.
+ * rather than terrain to be crossed. Pulling up in front of one opens it.
  */
 
 const SPACING = 8.5
@@ -30,11 +24,9 @@ const BOARD = { width: 4.2, height: 2.6, depth: 0.32 }
 function Board({
   index,
   active,
-  hovered,
 }: {
   index: number
   active: boolean
-  hovered: boolean
 }) {
   const material = useClayMaterial()
   const accent = useClayMaterial({ index })
@@ -42,7 +34,7 @@ function Board({
 
   useFrame(() => {
     if (!ref.current) return
-    const lift = active ? 0.55 : hovered ? 0.25 : 0
+    const lift = active ? 0.55 : 0
     ref.current.position.y += (lift - ref.current.position.y) * 0.14
   })
 
@@ -74,26 +66,33 @@ function Board({
 
 export default function Projects() {
   const [zx, zz] = ZONES.projects.position
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
-  useFrame(() => {
-    const focus = getWorldState().focus
-    if (!focus?.id.startsWith('projects-') && activeIndex !== null) {
-      setActiveIndex(null)
-    }
-  })
+  // Measured a little in front of each board rather than at it, so the board
+  // opens as you pull up facing it instead of when you clip its base.
+  const stands = useMemo(
+    () =>
+      projects.map((_, i) =>
+        toWorld(
+          [zx, zz],
+          (i - (projects.length - 1) / 2) * SPACING,
+          -CONTENT_START + 3.5
+        )
+      ),
+    [zx, zz]
+  )
+  // Overlapping radii; `useNearest` resolves to the closest board, so driving
+  // along the row hands off from one to the next without a dead gap between.
+  const activeIndex = useNearest(stands, SPACING * 0.8)
 
   return (
     <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
       {projects.map((project, i) => {
         const x = (i - (projects.length - 1) / 2) * SPACING
         const isActive = activeIndex === i
-        const id = `projects-${i}`
 
         return (
           <group key={project.name} position={[x, 0, -CONTENT_START]}>
-            <Board index={i + 2} active={isActive} hovered={hoverIndex === i} />
+            <Board index={i + 2} active={isActive} />
 
             <GroundShadow
               position={toWorld([zx, zz], x, -CONTENT_START)}
@@ -134,31 +133,6 @@ export default function Projects() {
                 </GroundText>
               </>
             ) : null}
-
-            <mesh
-              position={[0, 1.8, 0.6]}
-              visible={false}
-              onPointerOver={() => {
-                setHoverIndex(i)
-                document.body.style.cursor = 'pointer'
-              }}
-              onPointerOut={() => {
-                setHoverIndex((cur) => (cur === i ? null : cur))
-                document.body.style.cursor = ''
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setActiveIndex(isActive ? null : i)
-                setHovered(id)
-                setFocus({
-                  id,
-                  position: toWorld([zx, zz], x, -CONTENT_START + 3),
-                  scope: 'item',
-                })
-              }}
-            >
-              <boxGeometry args={[BOARD.width * 1.1, BOARD.height * 1.4, 2]} />
-            </mesh>
           </group>
         )
       })}

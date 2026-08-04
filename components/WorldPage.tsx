@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic'
 import { useEffect, type ReactNode } from 'react'
 import { useCapabilities } from '../lib/capabilities'
 import type { ZoneId } from '../lib/world'
+import DriveControls from './DriveControls'
 
 // three must never run during SSR.
 const WorldCanvas = dynamic(() => import('./three/WorldCanvas'), { ssr: false })
@@ -50,7 +51,10 @@ export default function WorldPage({
       </div>
 
       {showWorld ? (
-        <WorldCanvas entry={entry} postProcessing={!caps.lowPower} />
+        <>
+          <WorldCanvas entry={entry} postProcessing={!caps.lowPower} />
+          <DriveControls />
+        </>
       ) : null}
     </>
   )

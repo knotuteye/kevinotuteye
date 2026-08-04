@@ -46,18 +46,50 @@ export type Zone = {
   route: string
   /** Ground position [x, z]. */
   position: [number, number]
-  /** Half-width and half-depth of the interactive footprint. */
+  /** Half-width and half-depth of the marker rectangle drawn on the ground. */
   halfExtents: [number, number]
   /**
-   * Where the camera should actually look when this zone is focused, in the
-   * section's local (yawed) space. The marker sits at the entrance; the content
-   * lies beyond it, so framing the marker would leave the content off-screen.
+   * The section's whole territory, in its local (yawed) space: how far its
+   * content runs behind the marker, and how wide it spreads.
+   *
+   * Separate from `halfExtents` because the marker is a gate, not the room. A
+   * section's content runs up to 60m behind its marker, so testing the marker
+   * alone would report you as having left Work the moment you drove past the
+   * sign to read it — and take the URL and the reading camera angle with you.
    */
-  focusLocal: [number, number]
-  /** Camera pull-back when focused, for sections that need more room. */
-  focusDistance?: number
+  region: { halfWidth: number; depth: number }
 }
 
+/**
+ * Is this ground position inside the section's territory?
+ *
+ * Sections are laid out inside a group yawed by WORLD_YAW, so containment is
+ * tested in that same local frame — an axis-aligned test in world space would
+ * be a box at 38° to the content it is meant to contain.
+ */
+export function isInsideZone(zone: Zone, x: number, z: number): boolean {
+  const dx = x - zone.position[0]
+  const dz = z - zone.position[1]
+
+  const cos = Math.cos(WORLD_YAW)
+  const sin = Math.sin(WORLD_YAW)
+  // Inverse of the group's R_y(WORLD_YAW).
+  const localX = dx * cos - dz * sin
+  const localZ = dx * sin + dz * cos
+
+  return (
+    Math.abs(localX) < zone.region.halfWidth &&
+    localZ < zone.halfExtents[1] &&
+    localZ > -zone.region.depth
+  )
+}
+
+/**
+ * The zones stay spread out — Work alone runs some 60m of roles behind its
+ * marker, so pulling them toward the origin would fold one section's content
+ * into the next. What changed is that they are now *reachable*: you drive.
+ * Finding them is the signposts' job, not the layout's.
+ */
 export const ZONES: Record<ZoneId, Zone> = {
   intro: {
     id: 'intro',
@@ -65,7 +97,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/',
     position: [0, 0],
     halfExtents: [9, 5],
-    focusLocal: [0, 0],
+    region: { halfWidth: 12, depth: 8 },
   },
   work: {
     id: 'work',
@@ -73,9 +105,8 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/work',
     position: [55, -10],
     halfExtents: [6, 3.5],
-    // Frames the first two roles; the rest recede behind them.
-    focusLocal: [-2.5, -11],
-    focusDistance: 22,
+    // Eight roles at 7.5m spacing, plus the run-up to the first one.
+    region: { halfWidth: 16, depth: 66 },
   },
   projects: {
     id: 'projects',
@@ -83,8 +114,8 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/projects',
     position: [-58, -18],
     halfExtents: [6, 3.5],
-    focusLocal: [0, -8],
-    focusDistance: 36,
+    // Wide rather than deep: the boards stand in a row you drive along.
+    region: { halfWidth: 22, depth: 20 },
   },
   about: {
     id: 'about',
@@ -92,46 +123,46 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/about',
     position: [2, -98],
     halfExtents: [6, 3.5],
-    focusLocal: [-2, -13],
-    focusDistance: 42,
+    region: { halfWidth: 30, depth: 40 },
   },
 }
 
 export const ZONE_LIST = Object.values(ZONES)
+
+/**
+ * Where the car lands on a cold start: clear of the name's lettering, on the
+ * camera's side of it, facing the world.
+ *
+ * Shared rather than local to the world component because the signposts ring
+ * this point rather than the origin. The camera frames the car, so a ring
+ * centred 11m away would push the sign for whichever zone lies behind the
+ * driver off the edge of the screen — which, on the one screen whose whole job
+ * is to show you where you can go, is the entire problem to be avoided.
+ */
+export const INTRO_SPAWN: [number, number] = [0, 11]
 
 export function zoneForRoute(route: string): Zone {
   return ZONE_LIST.find((z) => z.route === route) ?? ZONES.intro
 }
 
 /* ------------------------------------------------------------------ */
-/* Focus state                                                         */
+/* Occupancy                                                           */
 /* ------------------------------------------------------------------ */
 
 /**
- * What the camera is currently looking at. Generalised beyond zones so that
- * individual pieces of content — a role, a project — can be focused too,
- * which is how you read detail in a world with no scrollbar.
- */
-export type FocusTarget = {
-  id: string
-  /** Ground position [x, z]. */
-  position: [number, number]
-  /** Zone-level framing pulls back; item-level framing comes in close. */
-  scope: 'zone' | 'item'
-  /** Overrides the scope's default camera distance. */
-  distance?: number
-}
-
-/**
- * Deliberately a tiny external store rather than context: the camera reads it
- * every frame inside useFrame, where a re-render per change would be wasteful.
+ * Which zone the car is currently standing in, or null out on the open floor.
+ *
+ * This replaced a focus target. The distinction matters: focus was something
+ * the site chose and the camera obeyed, whereas this is a *fact about where
+ * the car is* that several things independently react to — the camera lifts to
+ * a reading angle, the tilt-shift eases off, the section opens its nearest
+ * item. Nothing here moves the car.
  */
 type WorldState = {
-  focus: FocusTarget | null
-  hovered: string | null
+  activeZone: ZoneId | null
 }
 
-let state: WorldState = { focus: null, hovered: null }
+let state: WorldState = { activeZone: null }
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -142,24 +173,9 @@ export function getWorldState(): WorldState {
   return state
 }
 
-export function setFocus(focus: FocusTarget | null) {
-  if (state.focus?.id === focus?.id) return
-  state = { ...state, focus }
-  emit()
-}
-
-export function focusZone(zone: Zone) {
-  setFocus({
-    id: zone.id,
-    position: toWorld(zone.position, ...zone.focusLocal),
-    scope: 'zone',
-    distance: zone.focusDistance,
-  })
-}
-
-export function setHovered(hovered: string | null) {
-  if (state.hovered === hovered) return
-  state = { ...state, hovered }
+export function setActiveZone(activeZone: ZoneId | null) {
+  if (state.activeZone === activeZone) return
+  state = { activeZone }
   emit()
 }
 

@@ -26,6 +26,94 @@ export const revealUniforms = {
   uRevealAmplitude: { value: 3.2 },
 }
 
+/**
+ * The reveal displacement and ground clip, as a standalone vertex/fragment
+ * patch.
+ *
+ * Anything in the world that is *not* clay still has to take part in the
+ * reveal, or it hangs in the air while everything around it is still growing
+ * out of the floor. `MeshBasicMaterial` shares both of these chunk names with
+ * the matcap shader, so the same patch drops onto either.
+ */
+function patchReveal(shader: {
+  vertexShader: string
+  fragmentShader: string
+  uniforms: Record<string, { value: unknown }>
+}) {
+  Object.assign(shader.uniforms, revealUniforms)
+
+  shader.vertexShader = shader.vertexShader
+    .replace(
+      '#include <common>',
+      /* glsl */ `
+      #include <common>
+      uniform float uRevealProgress;
+      uniform float uRevealRadius;
+      uniform float uRevealAmplitude;
+      varying vec3 vWorldPosition;
+      `
+    )
+    .replace(
+      '#include <project_vertex>',
+      /* glsl */ `
+      vec4 worldPosition = modelMatrix * vec4( transformed, 1.0 );
+
+      float distanceToCenter = length( worldPosition.xz );
+      float revealProgress = ( uRevealProgress - distanceToCenter / uRevealRadius ) * 5.0;
+      revealProgress = 1.0 - clamp( revealProgress, -0.1, 1.0 );
+      revealProgress = pow( revealProgress, 2.0 );
+      if( uRevealProgress > 0.9 ) { revealProgress = 0.0; }
+
+      worldPosition.y -= revealProgress * uRevealAmplitude;
+
+      vWorldPosition = worldPosition.xyz;
+
+      vec4 mvPosition = viewMatrix * worldPosition;
+      gl_Position = projectionMatrix * mvPosition;
+      `
+    )
+
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      '#include <common>',
+      /* glsl */ `
+      #include <common>
+      varying vec3 vWorldPosition;
+      `
+    )
+    .replace(
+      '#include <tonemapping_fragment>',
+      /* glsl */ `
+      if( vWorldPosition.y < -0.001 ) discard;
+      #include <tonemapping_fragment>
+      `
+    )
+}
+
+/**
+ * Flat, unlit colour that still respects the reveal — folio's "pure" materials.
+ * Used for anything meant to read as emitting rather than reflecting, which in
+ * practice means the car's lights.
+ */
+export function createPureMaterial({
+  color,
+  opacity = 0.5,
+}: {
+  color: string
+  opacity?: number
+}): THREE.MeshBasicMaterial {
+  const material = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(color),
+    transparent: true,
+    opacity,
+  })
+
+  material.onBeforeCompile = patchReveal
+  material.customProgramCacheKey = () => 'pure-reveal'
+
+  return material
+}
+
 export type ClayOptions = {
   matcap: THREE.Texture
   indirectColor: string

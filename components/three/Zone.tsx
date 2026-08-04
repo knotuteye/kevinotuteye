@@ -3,20 +3,26 @@ import { useFrame } from '@react-three/fiber'
 import gsap from 'gsap'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { getCarState } from '../../lib/car'
 import {
-  focusZone,
   getWorldState,
-  setHovered,
+  isInsideZone,
+  setActiveZone,
   type Zone as ZoneData,
 } from '../../lib/world'
 
 /**
- * An interactive place on the ground: an outlined rectangle, a hazard-striped
- * fence that springs up on hover, and a floating label.
+ * A place on the ground you drive into: an outlined rectangle, a hazard-striped
+ * fence that springs up when the car is inside it, and a floating label.
  *
  * Shaders adapted from folio-2019's areaFence / areaFloorBorder (MIT). Every
  * affordance uses `back` easing — toys snap into place, which is the whole
  * reason this reads as a plaything rather than a UI.
+ *
+ * The label never hides. Under the old click-to-focus model it appeared on
+ * hover, which meant that from the landing view — where no marker was even on
+ * screen — there was no way to learn the site had other pages. A sign you have
+ * to already be looking at is not a sign.
  */
 
 const FENCE_HEIGHT = 1.6
@@ -91,18 +97,71 @@ const borderVertex = /* glsl */ `
   }
 `
 
-type Props = {
-  zone: ZoneData
-  onActivate?: (zone: ZoneData) => void
+/**
+ * Four walls and no lid, matching folio's AreaFenceGeometry.
+ *
+ * A `boxGeometry` would be one line, and was — but it caps the top, and now
+ * that the camera follows the car *into* the zone you end up looking down
+ * through a striped ceiling at the content you came to read. UVs run 0..1 up
+ * each wall so the shader's border strips land on the wall's own top and bottom
+ * edges rather than being stretched across a cube's face layout.
+ */
+function createFenceGeometry(
+  width: number,
+  depth: number,
+  height: number
+): THREE.BufferGeometry {
+  const hw = width / 2
+  const hd = depth / 2
+  const hh = height / 2
+
+  // Each wall as two triangles, wound so DoubleSide shows the stripes inside
+  // and out.
+  const walls: [number, number, number, number][] = [
+    [-hw, -hd, hw, -hd],
+    [hw, -hd, hw, hd],
+    [hw, hd, -hw, hd],
+    [-hw, hd, -hw, -hd],
+  ]
+
+  const positions: number[] = []
+  const uvs: number[] = []
+
+  for (const [x1, z1, x2, z2] of walls) {
+    positions.push(
+      x1, -hh, z1, x2, -hh, z2, x2, hh, z2,
+      x1, -hh, z1, x2, hh, z2, x1, hh, z1
+    )
+    uvs.push(0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1)
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(positions, 3)
+  )
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
+  return geometry
 }
 
-export default function Zone({ zone, onActivate }: Props) {
+type Props = {
+  zone: ZoneData
+  /** Fired once, on the frame the car crosses in. */
+  onEnter?: (zone: ZoneData) => void
+  /** Fired once, on the frame it crosses back out. */
+  onLeave?: (zone: ZoneData) => void
+}
+
+export default function Zone({ zone, onEnter, onLeave }: Props) {
   const [x, z] = zone.position
   const [hx, hz] = zone.halfExtents
 
   const fenceRef = useRef<THREE.Mesh>(null)
   const labelRef = useRef<THREE.Group>(null)
-  const isHovered = useRef(false)
+  /** At the gate — drives the fence and label. */
+  const atMarker = useRef(false)
+  /** Anywhere in the section — drives the URL and the camera angle. */
+  const inRegion = useRef(false)
 
   const fenceMaterial = useMemo(
     () =>
@@ -138,40 +197,21 @@ export default function Zone({ zone, onActivate }: Props) {
     []
   )
 
+  const fenceGeometry = useMemo(
+    () => createFenceGeometry(hx * 2, hz * 2, FENCE_HEIGHT),
+    [hx, hz]
+  )
+
   useEffect(
     () => () => {
       fenceMaterial.dispose()
       borderMaterial.dispose()
+      fenceGeometry.dispose()
     },
-    [fenceMaterial, borderMaterial]
+    [fenceMaterial, borderMaterial, fenceGeometry]
   )
 
-  const fade = useRef(1)
-
-  useFrame((_, delta) => {
-    fenceMaterial.uniforms.uTime.value += delta * 1000
-
-    // A zone marker is a signpost seen from a distance. Once you are actually
-    // inside it, it stops being useful and starts covering the content, so it
-    // retracts.
-    const { focus } = getWorldState()
-    const inside =
-      focus?.id === zone.id || focus?.id.startsWith(`${zone.id}-`) === true
-    fade.current += ((inside ? 0 : 1) - fade.current) * Math.min(1, delta * 4)
-
-    borderMaterial.uniforms.uAlpha.value = 0.65 * fade.current
-    fenceMaterial.uniforms.uBorderAlpha.value = 0.5 * fade.current
-
-    if (labelRef.current) {
-      labelRef.current.scale.setScalar(Math.max(0.0001, fade.current))
-    }
-  })
-
   const enter = () => {
-    if (isHovered.current) return
-    isHovered.current = true
-    setHovered(zone.id)
-    document.body.style.cursor = 'pointer'
     if (fenceRef.current) {
       gsap.to(fenceRef.current.position, {
         y: FENCE_HEIGHT / 2,
@@ -180,22 +220,25 @@ export default function Zone({ zone, onActivate }: Props) {
         overwrite: true,
       })
     }
+    // The label lifts out of the car's way rather than hiding, so you can still
+    // see which zone you are standing in.
     if (labelRef.current) {
       gsap.to(labelRef.current.position, {
-        y: 2.5,
+        y: 3.2,
         duration: 0.35,
         delay: 0.1,
         ease: 'back.out(3)',
         overwrite: true,
       })
     }
+    gsap.fromTo(
+      fenceMaterial.uniforms.uStrikeAlpha,
+      { value: 1 },
+      { value: 0.25, duration: 1.5 }
+    )
   }
 
   const leave = () => {
-    if (!isHovered.current) return
-    isHovered.current = false
-    setHovered(null)
-    document.body.style.cursor = ''
     if (fenceRef.current) {
       gsap.to(fenceRef.current.position, {
         y: -FENCE_HEIGHT / 2,
@@ -206,7 +249,7 @@ export default function Zone({ zone, onActivate }: Props) {
     }
     if (labelRef.current) {
       gsap.to(labelRef.current.position, {
-        y: 1.2,
+        y: 1.6,
         duration: 0.35,
         ease: 'back.in(4)',
         overwrite: true,
@@ -214,35 +257,34 @@ export default function Zone({ zone, onActivate }: Props) {
     }
   }
 
-  const activate = () => {
-    focusZone(zone)
-    onActivate?.(zone)
+  useFrame((_, delta) => {
+    fenceMaterial.uniforms.uTime.value += delta * 1000
 
-    // Squash, then spring back, with a white flash decaying behind it.
-    if (fenceRef.current) {
-      gsap.to(fenceRef.current.position, {
-        y: 0.05,
-        duration: 0.05,
-        overwrite: true,
-        onComplete: () => {
-          if (!fenceRef.current) return
-          gsap.to(fenceRef.current.position, {
-            y: FENCE_HEIGHT / 2,
-            duration: 0.25,
-            ease: 'back.out(2)',
-          })
-        },
-      })
+    const car = getCarState()
+    if (!car.ready) return
+
+    const nowAtMarker = Math.abs(car.x - x) < hx && Math.abs(car.z - z) < hz
+    if (nowAtMarker !== atMarker.current) {
+      atMarker.current = nowAtMarker
+      if (nowAtMarker) enter()
+      else leave()
     }
-    gsap.fromTo(
-      fenceMaterial.uniforms.uStrikeAlpha,
-      { value: 1 },
-      { value: 0.25, duration: 1.5 }
-    )
-  }
 
-  // Releasing the cursor if this unmounts mid-hover.
-  useEffect(() => () => void (document.body.style.cursor = ''), [])
+    const nowInRegion = isInsideZone(zone, car.x, car.z)
+    if (nowInRegion !== inRegion.current) {
+      inRegion.current = nowInRegion
+      if (nowInRegion) {
+        setActiveZone(zone.id)
+        onEnter?.(zone)
+      } else {
+        onLeave?.(zone)
+        // Only surrender the active zone if it is still ours. Regions do not
+        // overlap, but two Zone components settle in an unspecified order
+        // within a frame, so an unconditional clear could wipe a fresh arrival.
+        if (getWorldState().activeZone === zone.id) setActiveZone(null)
+      }
+    }
+  })
 
   return (
     <group position={[x, 0, z]}>
@@ -256,20 +298,19 @@ export default function Zone({ zone, onActivate }: Props) {
         <planeGeometry args={[hx * 2, hz * 2]} />
       </mesh>
 
-      {/* Fence, parked below ground until hovered */}
+      {/* Fence, parked below ground until the car arrives */}
       <mesh
         ref={fenceRef}
+        geometry={fenceGeometry}
         material={fenceMaterial}
         position={[0, -FENCE_HEIGHT / 2, 0]}
         renderOrder={2}
-      >
-        <boxGeometry args={[hx * 2, FENCE_HEIGHT, hz * 2]} />
-      </mesh>
+      />
 
-      <group ref={labelRef} position={[0, 1.2, 0]}>
+      <group ref={labelRef} position={[0, 1.6, 0]}>
         <Text
           font="/fonts/montserrat-700.ttf"
-          fontSize={0.62}
+          fontSize={0.95}
           color="#ffffff"
           anchorX="center"
           anchorY="middle"
@@ -278,18 +319,6 @@ export default function Zone({ zone, onActivate }: Props) {
           {zone.label}
         </Text>
       </group>
-
-      {/* Interaction footprint — invisible, generously sized for touch. */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.05, 0]}
-        visible={false}
-        onPointerOver={enter}
-        onPointerOut={leave}
-        onClick={activate}
-      >
-        <planeGeometry args={[hx * 2.2, hz * 2.2]} />
-      </mesh>
     </group>
   )
 }

@@ -1,28 +1,22 @@
 import { useFrame } from '@react-three/fiber'
-import { useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { experience, splitCompany, wrap } from '../../../lib/content'
-import {
-  getWorldState,
-  setFocus,
-  setHovered,
-  toWorld,
-  WORLD_YAW,
-  ZONES,
-} from '../../../lib/world'
+import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
 import GroundText from '../GroundText'
 import GroundShadow from '../Shadow'
+import { useNearest } from '../useNearest'
 
 /**
  * Work history, laid out as a column of ground entries running away from the
  * camera — newest nearest, oldest furthest, so the layout itself is the
  * chronology.
  *
- * Each role is clickable. Focusing one pulls the camera in and reveals its
- * detail: what the company does, what shipped there, and the stack. That
- * expand-on-focus is what lets eight roles live in a space that only ever
- * shows two or three at a time.
+ * Drive up to a role and it opens: what the company does, what shipped there,
+ * and the stack. That expand-on-approach is what lets eight roles live in a
+ * column you only ever read two or three of at a time, and it means the column
+ * is read by driving down it rather than by clicking along it.
  */
 
 const ROW_SPACING = 7.5
@@ -59,17 +53,22 @@ function RoleMarker({
 
 export default function Work() {
   const [zx, zz] = ZONES.work.position
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const hoverRef = useRef<number | null>(null)
 
-  // Keep local expansion in step with the camera: stepping away from this zone
-  // collapses whatever was open.
-  useFrame(() => {
-    const focus = getWorldState().focus
-    if (!focus?.id.startsWith('work-') && activeIndex !== null) {
-      setActiveIndex(null)
-    }
-  })
+  // Anchored on local x=0 — the lane the car drives down — rather than on the
+  // text at x=-4. Measuring to the text puts every row a constant 4m of lateral
+  // offset away before the driver has moved at all, which eats most of the
+  // radius and leaves rows that never open.
+  //
+  // The radius overlaps its neighbours slightly; `useNearest` takes the closest,
+  // so one role is always open rather than blinking off between rows.
+  const rows = useMemo(
+    () =>
+      experience.map((_, i) =>
+        toWorld([zx, zz], 0, -(CONTENT_START + i * ROW_SPACING))
+      ),
+    [zx, zz]
+  )
+  const activeIndex = useNearest(rows, ROW_SPACING * 0.8)
 
   return (
     <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
@@ -136,36 +135,6 @@ export default function Work() {
                 ))}
               </group>
             ) : null}
-
-            {/* Interaction footprint for this row. */}
-            <mesh
-              position={[-1, 0.04, 0]}
-              rotation={[-Math.PI / 2, 0, 0]}
-              visible={false}
-              onPointerOver={() => {
-                hoverRef.current = i
-                setHovered(id)
-                document.body.style.cursor = 'pointer'
-              }}
-              onPointerOut={() => {
-                if (hoverRef.current === i) {
-                  hoverRef.current = null
-                  setHovered(null)
-                  document.body.style.cursor = ''
-                }
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setActiveIndex(isActive ? null : i)
-                setFocus({
-                  id,
-                  position: toWorld([zx, zz], -4, z - 1.5),
-                  scope: 'item',
-                })
-              }}
-            >
-              <planeGeometry args={[18, ROW_SPACING * 0.92]} />
-            </mesh>
           </group>
         )
       })}

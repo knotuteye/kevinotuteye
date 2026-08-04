@@ -57,6 +57,25 @@ const fragmentShader = /* glsl */ `
   }
 `
 
+/**
+ * Exported because the car needs a shadow that moves. Everything else in the
+ * world is static and can use the component below, which places its quad from
+ * props; the car has to write into the mesh every frame instead.
+ */
+export function createShadowMaterial(softness = 0.35): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    depthWrite: false,
+    uniforms: {
+      uColor: { value: new THREE.Color(world.indirect) },
+      uAlpha: { value: 0 },
+      uSoftness: { value: softness },
+    },
+  })
+}
+
 type Props = {
   /** Ground position [x, z]. */
   position: [number, number]
@@ -88,21 +107,7 @@ export default function GroundShadow({
   const [ox, oz] = shadowOffsetFor(height)
   // Contact fades with distance from the ground, the way a real one would.
   const falloff = Math.max(0, 1 - height / 4)
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        depthWrite: false,
-        uniforms: {
-          uColor: { value: new THREE.Color(world.indirect) },
-          uAlpha: { value: 0 },
-          uSoftness: { value: softness },
-        },
-      }),
-    [softness]
-  )
+  const material = useMemo(() => createShadowMaterial(softness), [softness])
 
   // Driven from the shared reveal value, which GSAP tweens outside React —
   // so this has to happen per frame, not per render.

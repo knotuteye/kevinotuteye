@@ -61,7 +61,7 @@ const Glow = forwardRef<GlowEffectImpl>(function Glow(_props, ref) {
   return <primitive ref={ref} object={effect} dispose={null} />
 })
 
-/** Tilt-shift whose strength eases toward zero while a zone is focused. */
+/** Tilt-shift whose strength eases toward zero while the car is in a zone. */
 function FocusTiltShift() {
   const effect = useMemo(
     () => new TiltShiftEffect({ blur: BLUR.idle, taper: 0.9, samples: 10 }),
@@ -70,7 +70,7 @@ function FocusTiltShift() {
   const current = useRef(BLUR.idle)
 
   useFrame((_, delta) => {
-    const focused = getWorldState().focus !== null
+    const focused = getWorldState().activeZone !== null
     const target = focused ? BLUR.focused : BLUR.idle
     current.current += (target - current.current) * Math.min(1, delta * 1.2)
 
