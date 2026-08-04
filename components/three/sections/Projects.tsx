@@ -1,11 +1,13 @@
+import { Text, useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { projects, wrap } from '../../../lib/content'
+import { projects, wrap, type Project } from '../../../lib/content'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
 import GroundText from '../GroundText'
+import { createImageMaterial } from '../materials/clay'
 import GroundShadow from '../Shadow'
 import { useNearest } from '../useNearest'
 
@@ -15,6 +17,13 @@ import { useNearest } from '../useNearest'
  * Boards stand upright rather than lying flat — they are the one thing in the
  * world with a "face", which is what makes them read as work to be looked at
  * rather than terrain to be crossed. Pulling up in front of one opens it.
+ *
+ * And the face now carries the work. A portfolio whose project boards are blank
+ * slabs is asking to be taken on trust; folio puts a screenshot on every one,
+ * and that is most of why its projects section reads as finished. Drop a file
+ * in `public/img/projects/` and point a project's `image` at it. Until then a
+ * board shows a typographic plate built from its own initials — plainly a
+ * placeholder rather than a borrowed screenshot.
  */
 
 const SPACING = 8.5
@@ -22,10 +31,113 @@ const SPACING = 8.5
 const CONTENT_START = 6
 const BOARD = { width: 4.2, height: 2.6, depth: 0.32 }
 
+/** Inset from the slab's edge, so the board reads as a frame around the face. */
+const FACE = { width: BOARD.width - 0.34, height: BOARD.height - 0.34 }
+
+/** Just proud of the slab's front, inside the leaned group. */
+const FACE_Z = BOARD.depth / 2 + 0.012
+
+/** First letters of the first two significant words — "Godseye Video" -> "GV". */
+function initials(name: string): string {
+  return name
+    .split(',')[0]
+    .split(/\s+/)
+    .filter((word) => /^[a-z]/i.test(word) && word.length > 1)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('')
+}
+
+/**
+ * A screenshot, cover-fitted to the board's face.
+ *
+ * Its own component because `useTexture` suspends, and a board with no image
+ * must not pay for a hook it has nothing to give. Cover rather than contain:
+ * letterboxing a screenshot inside a slab that is itself a frame gives you two
+ * nested borders and a picture the size of a stamp.
+ */
+function BoardImage({ src }: { src: string }) {
+  const texture = useTexture(src)
+
+  const material = useMemo(() => {
+    const image = texture.image as { width: number; height: number } | undefined
+    const source = image && image.height ? image.width / image.height : 1
+    const target = FACE.width / FACE.height
+
+    // Crop the long axis by moving the UV window rather than by scaling the
+    // mesh, so every board in the row stays exactly the same size.
+    const cloned = texture.clone()
+    cloned.colorSpace = THREE.SRGBColorSpace
+    cloned.center.set(0.5, 0.5)
+    if (source > target) cloned.repeat.set(target / source, 1)
+    else cloned.repeat.set(1, source / target)
+    cloned.needsUpdate = true
+
+    return createImageMaterial(cloned)
+  }, [texture])
+
+  useEffect(
+    () => () => {
+      material.map?.dispose()
+      material.dispose()
+    },
+    [material]
+  )
+
+  return (
+    <mesh material={material} position={[0, 0, FACE_Z]}>
+      <planeGeometry args={[FACE.width, FACE.height]} />
+    </mesh>
+  )
+}
+
+/**
+ * The stand-in: the project's initials, large, on the palette colour that board
+ * is already keyed to. Reads as a designed plate rather than a missing asset,
+ * which is the difference between a row that looks unfinished and one that
+ * looks deliberate.
+ */
+function BoardPlate({ project, index }: { project: Project; index: number }) {
+  const backing = useClayMaterial({ index })
+
+  return (
+    <group position={[0, 0, FACE_Z]}>
+      <mesh material={backing}>
+        <planeGeometry args={[FACE.width, FACE.height]} />
+      </mesh>
+      <Text
+        font="/fonts/montserrat-700.ttf"
+        position={[0, 0.1, 0.01]}
+        fontSize={1.1}
+        color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        letterSpacing={0.04}
+      >
+        {initials(project.name)}
+      </Text>
+      <Text
+        font="/fonts/montserrat-700.ttf"
+        position={[0, -0.78, 0.01]}
+        fontSize={0.17}
+        color="#ffffff"
+        fillOpacity={0.7}
+        anchorX="center"
+        anchorY="middle"
+        letterSpacing={0.26}
+      >
+        {String(index + 1).padStart(2, '0')}
+      </Text>
+    </group>
+  )
+}
+
 function Board({
+  project,
   index,
   active,
 }: {
+  project: Project
   index: number
   active: boolean
 }) {
@@ -42,13 +154,19 @@ function Board({
   return (
     <group ref={ref}>
       {/* Leaning back slightly, so the face catches the camera. */}
-      <mesh
-        material={material}
+      <group
         position={[0, BOARD.height / 2 + 0.35, 0]}
         rotation={[0.16, 0, 0]}
       >
-        <boxGeometry args={[BOARD.width, BOARD.height, BOARD.depth]} />
-      </mesh>
+        <mesh material={material}>
+          <boxGeometry args={[BOARD.width, BOARD.height, BOARD.depth]} />
+        </mesh>
+        {project.image ? (
+          <BoardImage src={project.image} />
+        ) : (
+          <BoardPlate project={project} index={index} />
+        )}
+      </group>
       {/* Colored cap — keeps the palette cycling legible without turning the
           whole face into a low-value block. */}
       <mesh
@@ -120,7 +238,7 @@ export default function Projects() {
 
         return (
           <group key={project.name} position={[x, 0, -CONTENT_START]}>
-            <Board index={i + 2} active={isActive} />
+            <Board project={project} index={i + 2} active={isActive} />
 
             <GroundShadow
               position={toWorld([zx, zz], x, -CONTENT_START)}

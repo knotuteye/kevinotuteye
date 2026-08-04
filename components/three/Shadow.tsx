@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import type { ObstacleTransform } from '../../lib/obstacles'
 import { world } from '../../lib/palette'
 
 /**
@@ -94,6 +95,12 @@ type Props = {
    * must place these in world space rather than inside a rotated group.
    */
   yaw?: number
+  /**
+   * A simulated prop's live pose. When present it supersedes `position`,
+   * `height` and `yaw` every frame, and the props become the rest pose used
+   * until the first physics step lands.
+   */
+  source?: ObstacleTransform
 }
 
 export default function GroundShadow({
@@ -103,20 +110,47 @@ export default function GroundShadow({
   softness = 0.35,
   height = 0.5,
   yaw = 0,
+  source,
 }: Props) {
   const [ox, oz] = shadowOffsetFor(height)
   // Contact fades with distance from the ground, the way a real one would.
   const falloff = Math.max(0, 1 - height / 4)
   const material = useMemo(() => createShadowMaterial(softness), [softness])
+  const ref = useRef<THREE.Mesh>(null)
 
   // Driven from the shared reveal value, which GSAP tweens outside React —
   // so this has to happen per frame, not per render.
   useFrame(() => {
-    material.uniforms.uAlpha.value = shadowAlpha.value * intensity * falloff
+    if (!source || !ref.current) {
+      material.uniforms.uAlpha.value = shadowAlpha.value * intensity * falloff
+      return
+    }
+
+    // A prop that has been knocked into the air casts from wherever it now is.
+    const liveHeight = Math.max(0, source.y)
+    const [lox, loz] = shadowOffsetFor(liveHeight)
+    ref.current.position.set(source.x + lox, 0.01, source.z + loz)
+
+    /**
+     * Yaw about +y, read straight off the quaternion.
+     *
+     * A tumbling prop's shadow should really shrink as it turns edge-on, which
+     * is what folio's `orientationAlpha` does. Skipped here because every prop
+     * that moves has a roughly square footprint, so the only thing that term
+     * would change is the shape of a shadow nobody can distinguish from a disc.
+     */
+    ref.current.rotation.z = Math.atan2(
+      2 * (source.qw * source.qy + source.qx * source.qz),
+      1 - 2 * (source.qy * source.qy + source.qz * source.qz)
+    )
+
+    material.uniforms.uAlpha.value =
+      shadowAlpha.value * intensity * Math.max(0, 1 - liveHeight / 4)
   })
 
   return (
     <mesh
+      ref={ref}
       material={material}
       position={[position[0] + ox, 0.01, position[1] + oz]}
       rotation={[-Math.PI / 2, 0, yaw]}

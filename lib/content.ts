@@ -17,6 +17,20 @@ export type Project = {
   link: string
   about: string
   technologies: string[]
+  /**
+   * A screenshot for the project's board in the world, as a path under
+   * `public` — e.g. `/img/projects/kronos.jpg`.
+   *
+   * Optional, and a board without one is not a broken board: it falls back to a
+   * typographic plate built from the project's own initials. That fallback is
+   * deliberately not a fake screenshot. A board showing a stock dashboard image
+   * would be a claim about work that was never done, and the whole row would
+   * stop being evidence.
+   *
+   * Landscape crops read best — the face is 4.2 x 2.6, and anything is
+   * cover-fitted to that rather than squashed.
+   */
+  image?: string
 }
 
 export type Role = {

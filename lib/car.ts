@@ -1,5 +1,10 @@
 import * as CANNON from 'cannon-es'
-import { subscribeObstacles, type Obstacle } from './obstacles'
+import {
+  getObstacleTransform,
+  subscribeObstacles,
+  type Obstacle,
+  type ObstacleTransform,
+} from './obstacles'
 
 /**
  * The car, ported from folio-2019's `World/Physics.js` (MIT).
@@ -36,6 +41,44 @@ export function toThreeGround(x: number, y: number): [number, number] {
 /** three ground [x, z] -> cannon ground [x, y]. */
 export function toCannonGround(x: number, z: number): [number, number] {
   return [x, -z]
+}
+
+/**
+ * The same -90° X rotation, as a quaternion and its inverse.
+ *
+ * A rotation changes basis by conjugation, so a body's orientation in three's
+ * frame is `C · q · C⁻¹`. The car sidesteps this by parenting its meshes to a
+ * group that carries `C` and copying quaternions raw, which is the cheaper
+ * trick and the right one there — but it only works when every mesh under that
+ * group is authored Z-up too. Scenery is authored Y-up like the rest of the
+ * site, so its bodies get converted rather than its meshes reparented.
+ */
+const C = new CANNON.Quaternion(-Math.SQRT1_2, 0, 0, Math.SQRT1_2)
+const C_INV = new CANNON.Quaternion(Math.SQRT1_2, 0, 0, Math.SQRT1_2)
+const conversionScratch = new CANNON.Quaternion()
+const converted = new CANNON.Quaternion()
+
+/**
+ * Publishes a body's pose into the transform its mesh reads.
+ *
+ * Both shape kinds survive the conjugation without a correction term because
+ * the shapes are built with their axes permuted the same way the frames are:
+ * a box swaps its y and z extents, and a cylinder is stood up about the
+ * simulation's +z, which is exactly where three's +y lands.
+ */
+function publishTransform(body: CANNON.Body, transform: ObstacleTransform) {
+  transform.x = body.position.x
+  transform.y = body.position.z
+  transform.z = -body.position.y
+
+  C.mult(body.quaternion, conversionScratch)
+  conversionScratch.mult(C_INV, converted)
+
+  transform.qx = converted.x
+  transform.qy = converted.y
+  transform.qz = converted.z
+  transform.qw = converted.w
+  transform.live = true
 }
 
 /* ------------------------------------------------------------------ */
@@ -172,8 +215,14 @@ export class CarPhysics {
   onImpact: ((strength: number) => void) | null = null
 
   private readonly floorMaterial: CANNON.Material
+  private readonly propMaterial: CANNON.Material
   private readonly floorBody: CANNON.Body
   private readonly obstacleBodies = new Map<Obstacle, CANNON.Body>()
+  /**
+   * Only the bodies that can actually move, so the per-step readback walks four
+   * dozen props rather than every static wall and board in the world.
+   */
+  private readonly simulated: { body: CANNON.Body; transform: ObstacleTransform }[] = []
   private unsubscribeObstacles: (() => void) | null = null
   private readonly worldForward = new CANNON.Vec3()
   private readonly oldPosition = new CANNON.Vec3()
@@ -200,6 +249,34 @@ export class CarPhysics {
     // contacts — their grip comes entirely from `frictionSlip`. Omitted rather
     // than carried over as decoration.
     this.floorMaterial = new CANNON.Material('floorMaterial')
+
+    /**
+     * Props need friction; nothing else in this world does.
+     *
+     * The global default is frictionless, carried over from folio, and that is
+     * correct for the car — a raycast vehicle gets its grip from `frictionSlip`
+     * and a floor that gripped the chassis box would fight it. But a knocked
+     * rock on a frictionless plane never stops: it skates off across the map at
+     * whatever speed it left at and is still going when you next look. So props
+     * get their own material and their own contact pairs, and the car keeps the
+     * frictionless default it was tuned against.
+     *
+     * Deliberately no pair with the chassis, which has no material and so falls
+     * through to that default. The car should knock a prop away, not drag it.
+     */
+    this.propMaterial = new CANNON.Material('propMaterial')
+    this.world.addContactMaterial(
+      new CANNON.ContactMaterial(this.propMaterial, this.floorMaterial, {
+        friction: 0.4,
+        restitution: 0.3,
+      })
+    )
+    this.world.addContactMaterial(
+      new CANNON.ContactMaterial(this.propMaterial, this.propMaterial, {
+        friction: 0.25,
+        restitution: 0.35,
+      })
+    )
 
     // The default broadphase is O(n²) over every pair in the world, which was
     // free when the world held a floor and a car. The scenery adds some seventy
@@ -329,8 +406,16 @@ export class CarPhysics {
     this.chassisBody.removeEventListener('collide', this.onCollide)
     this.unsubscribeObstacles?.()
     this.unsubscribeObstacles = null
-    for (const body of this.obstacleBodies.values()) this.world.removeBody(body)
+    for (const body of this.obstacleBodies.values()) {
+      body.removeEventListener('collide', this.onPropCollide)
+      this.world.removeBody(body)
+    }
     this.obstacleBodies.clear()
+    // Left `live`, and left holding their last pose. `attach` rebuilds every
+    // body from the declared rest pose and republishes immediately, so the
+    // props snap home on the same frame the car does — which is what makes
+    // reset put the whole world back rather than just the car.
+    this.simulated.length = 0
     this.vehicle.removeFromWorld(this.world)
     carState.ready = false
   }
@@ -343,15 +428,24 @@ export class CarPhysics {
     if (action === 'remove') {
       const body = this.obstacleBodies.get(obstacle)
       if (!body) return
+      body.removeEventListener('collide', this.onPropCollide)
       this.world.removeBody(body)
       this.obstacleBodies.delete(obstacle)
+      const index = this.simulated.findIndex((entry) => entry.body === body)
+      if (index !== -1) this.simulated.splice(index, 1)
       return
     }
 
     if (this.obstacleBodies.has(obstacle)) return
 
+    const mass = obstacle.mass ?? 0
+    const dynamic = mass > 0
+
     const [x, y] = toCannonGround(...obstacle.position)
-    const body = new CANNON.Body({ mass: 0, material: this.floorMaterial })
+    const body = new CANNON.Body({
+      mass,
+      material: dynamic ? this.propMaterial : this.floorMaterial,
+    })
     body.position.set(x, y, obstacle.y)
 
     // A yaw about three's +y is a yaw about the simulation's +z, same sign:
@@ -367,6 +461,9 @@ export class CarPhysics {
       // The prop's height is its y; here it is z. Only the extents swap — the
       // box is centred, so there is no offset to carry.
       body.addShape(new CANNON.Box(new CANNON.Vec3(hx, hz, hy)))
+    } else if (obstacle.kind === 'sphere') {
+      // Frame-agnostic — the one shape the Z-up/Y-up split cannot touch.
+      body.addShape(new CANNON.Sphere(obstacle.radius))
     } else {
       // cannon-es builds cylinders along their own +y, which in a Z-up world
       // lays them on their side. Standing one up is a per-shape orientation
@@ -384,6 +481,61 @@ export class CarPhysics {
 
     this.world.addBody(body)
     this.obstacleBodies.set(obstacle, body)
+
+    if (!dynamic) return
+
+    /**
+     * Damping is what separates a prop from debris.
+     *
+     * Undamped, a knocked prop keeps most of its energy through every bounce
+     * and skitters for ten seconds after the car has driven off. These values
+     * are tuned so a hit reads as a solid shunt that travels a couple of metres
+     * and stops — the angular term is the higher of the two because tumbling is
+     * what looks unphysical longest.
+     */
+    body.linearDamping = 0.25
+    body.angularDamping = 0.45
+
+    /**
+     * Props sleep; the car explicitly does not.
+     *
+     * Sixty-odd dynamic bodies is a real solver cost, and all but the handful
+     * you just hit are sitting perfectly still. The limits are loose enough
+     * that a prop settles within about half a second of coming to rest and
+     * drops out of the simulation until something touches it again.
+     */
+    body.allowSleep = true
+    body.sleepSpeedLimit = 0.15
+    body.sleepTimeLimit = 0.5
+
+    body.addEventListener('collide', this.onPropCollide)
+
+    // Published once here rather than waited for: a prop that spawns asleep
+    // never sees a postStep, and its mesh would hold the seeded rest pose
+    // forever. Identical values in the common case, correct in the other one.
+    const transform = getObstacleTransform(obstacle)
+    publishTransform(body, transform)
+    this.simulated.push({ body, transform })
+  }
+
+  /**
+   * Props knocking into each other and into the world.
+   *
+   * Separate from the chassis listener because that one only ever hears about
+   * contacts the *car* is part of — a rock the car sends into a second rock is
+   * silent otherwise, which is precisely the interaction worth hearing. The
+   * floor is filtered for the same reason it is there: props land on it.
+   *
+   * Car-versus-prop now reports twice, once from each body. That is what the
+   * cooldown in `lib/audio` is for, and it collapses the pair into one knock.
+   */
+  private onPropCollide = (event: {
+    body: CANNON.Body
+    contact: CANNON.ContactEquation
+  }) => {
+    if (!this.onImpact || event.body === this.floorBody) return
+    const strength = Math.abs(event.contact.getImpactVelocityAlongNormal())
+    if (strength > 1) this.onImpact(strength)
   }
 
   /**
@@ -413,6 +565,13 @@ export class CarPhysics {
     this.goingForward = this.forwardSpeed > 0
 
     this.updateUpsideDown()
+
+    // Sleeping bodies republish the same numbers, which is cheaper than testing
+    // for it — and a body woken by a contact is already awake by the time this
+    // runs, so there is no frame where a moving prop is skipped.
+    for (const entry of this.simulated) {
+      publishTransform(entry.body, entry.transform)
+    }
 
     for (let i = 0; i < this.vehicle.wheelInfos.length; i++) {
       this.vehicle.updateWheelTransform(i)

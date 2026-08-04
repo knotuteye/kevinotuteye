@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { makeMatcap } from '../../lib/matcap'
-import { colorAt, world, type PaletteName } from '../../lib/palette'
+import { colorAt, shade, world, type PaletteName } from '../../lib/palette'
 import { palette } from '../../lib/palette'
 import { createClayMaterial } from './materials/clay'
 
@@ -9,18 +9,26 @@ import { createClayMaterial } from './materials/clay'
  * A material keyed to the palette. Callers pass either a palette name, an
  * index (reusing the same `index % colors.length` cycling the DOM components
  * use), or nothing at all for the default off-white body color.
+ *
+ * `tint` shifts the result lighter or darker without leaving the palette — see
+ * `shade`. It is how the scenery gets its variety: same seven colours, several
+ * dozen distinguishable objects.
  */
 export function useClayMaterial(opts?: {
   color?: PaletteName
   index?: number
   clipBelowGround?: boolean
+  /** -1 (black) to 1 (white). Sensible range is about ±0.3. */
+  tint?: number
 }) {
-  const hex =
+  const base =
     opts?.color !== undefined
       ? palette[opts.color]
       : opts?.index !== undefined
         ? colorAt(opts.index)
         : world.bone
+
+  const hex = opts?.tint ? shade(base, opts.tint) : base
 
   const material = useMemo(
     () =>

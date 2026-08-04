@@ -114,6 +114,25 @@ export function createPureMaterial({
   return material
 }
 
+/**
+ * An image, shown flat and unlit, that still takes part in the reveal.
+ *
+ * Screenshots are the one thing in this world that must not be shaded. A
+ * matcap would relight a picture that already has its own lighting baked in,
+ * and the result reads as a photograph of a screen rather than as the screen —
+ * so this is `MeshBasicMaterial` with the reveal patch and nothing else.
+ */
+export function createImageMaterial(
+  map: THREE.Texture
+): THREE.MeshBasicMaterial {
+  const material = new THREE.MeshBasicMaterial({ map, toneMapped: false })
+
+  material.onBeforeCompile = patchReveal
+  material.customProgramCacheKey = () => 'image-reveal'
+
+  return material
+}
+
 export type ClayOptions = {
   matcap: THREE.Texture
   indirectColor: string

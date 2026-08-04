@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react'
 import { useCapabilities } from '../lib/capabilities'
 import type { ZoneId } from '../lib/world'
 import DriveControls from './DriveControls'
+import Loader from './Loader'
 
 // three must never run during SSR.
 const WorldCanvas = dynamic(() => import('./three/WorldCanvas'), { ssr: false })
@@ -54,6 +55,9 @@ export default function WorldPage({
         <>
           <WorldCanvas entry={entry} postProcessing={!caps.lowPower} />
           <DriveControls />
+          {/* Above the canvas and above the controls — it is the only thing on
+              screen until the world is worth showing. */}
+          <Loader />
         </>
       ) : null}
     </>

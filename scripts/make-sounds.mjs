@@ -1,5 +1,5 @@
 /**
- * Generates the world's three sounds into `public/sounds/`.
+ * Generates the world's sounds into `public/sounds/`.
  *
  * They are synthesised rather than sampled because the site has no sound
  * budget and no licence to spend: a recorded engine loop is a few hundred
@@ -8,6 +8,14 @@
  * hand when the sounds change, not as part of the build.
  *
  *   node scripts/make-sounds.mjs
+ *
+ * The knocks and the horn come in pools rather than singly. One sample per
+ * event was the tell that gave the whole soundtrack away: scraping along a row
+ * of boards played the identical waveform eight times in two seconds, and no
+ * amount of pitch jitter hides that — the ear locks onto the envelope, not the
+ * pitch. folio ships six brick samples and four car hits for exactly this
+ * reason. Five knocks here are graded light to heavy so the selection can be
+ * driven by how hard the hit actually was, rather than being a lucky dip.
  *
  * The engine loop is the one with a real constraint on it. It has to be
  * seamless, so every partial in it is an exact multiple of 1 / duration and
@@ -136,13 +144,22 @@ function engine() {
 /* Horn                                                                */
 /* ------------------------------------------------------------------ */
 
-function horn() {
-  const duration = 0.55
+/**
+ * Two horns, differing in interval and in how bright they are.
+ *
+ * A minor third and a perfect fourth. Both are intervals real horns are built
+ * on, and swapping between them keeps a leaned-on horn button from turning into
+ * a stuck note.
+ */
+const HORN_VARIANTS = [
+  { tones: [466, 622], cutoff: 3200, duration: 0.55 },
+  { tones: [440, 523], cutoff: 2600, duration: 0.5 },
+]
+
+function horn(index, { tones, cutoff, duration }) {
   const length = Math.round(duration * SAMPLE_RATE)
   const samples = new Float32Array(length)
 
-  // Two tones a fourth apart, the way a car horn is actually built.
-  const tones = [466, 622]
   const attack = 0.012
   const release = 0.09
 
@@ -160,18 +177,37 @@ function horn() {
     samples[i] = value * rise * fall
   }
 
-  writeWav('horn.wav', normalise(lowpass(samples, 3200), 0.8))
+  writeWav(`horn-${index + 1}.wav`, normalise(lowpass(samples, cutoff), 0.8))
 }
 
 /* ------------------------------------------------------------------ */
-/* Impact                                                              */
+/* Knocks                                                              */
 /* ------------------------------------------------------------------ */
 
-function impact() {
-  const duration = 0.4
-  const length = Math.round(duration * SAMPLE_RATE)
+/**
+ * Five knocks, ordered light to heavy, and that order is the interface.
+ *
+ * `lib/audio` picks an index from the impact velocity, so a keycap flicked off
+ * a bumper and the car putting its nose into a project board are not the same
+ * sound played at two volumes — which is what a single sample can only ever be.
+ *
+ * The grade runs along three axes at once, because that is what actually
+ * separates a tap from a slam: heavier hits start their pitch sweep lower, ring
+ * longer, and lose their top end. Turning only the volume up gives you a loud
+ * tap.
+ */
+const KNOCK_VARIANTS = [
+  { seed: 19, duration: 0.22, noiseDecay: 0.022, noiseMix: 0.7, start: 320, floor: 120, sweep: 0.04, ring: 0.05, cutoff: 3000 },
+  { seed: 23, duration: 0.28, noiseDecay: 0.03, noiseMix: 0.62, start: 230, floor: 95, sweep: 0.05, ring: 0.07, cutoff: 2400 },
+  { seed: 31, duration: 0.34, noiseDecay: 0.038, noiseMix: 0.58, start: 170, floor: 72, sweep: 0.06, ring: 0.09, cutoff: 1900 },
+  { seed: 37, duration: 0.4, noiseDecay: 0.045, noiseMix: 0.55, start: 130, floor: 58, sweep: 0.07, ring: 0.11, cutoff: 1400 },
+  { seed: 41, duration: 0.48, noiseDecay: 0.055, noiseMix: 0.5, start: 100, floor: 44, sweep: 0.09, ring: 0.14, cutoff: 1050 },
+]
+
+function knock(index, spec) {
+  const length = Math.round(spec.duration * SAMPLE_RATE)
   const samples = new Float32Array(length)
-  const rand = mulberry32(19)
+  const rand = mulberry32(spec.seed)
 
   // Clay hitting clay: a short scrape of noise over a low thud that drops in
   // pitch as it dies, which is what makes it read as heavy rather than as a
@@ -179,18 +215,22 @@ function impact() {
   let sweepPhase = 0
   for (let i = 0; i < length; i++) {
     const t = i / SAMPLE_RATE
-    const noise = (rand() * 2 - 1) * Math.exp(-t / 0.045)
+    const noise = (rand() * 2 - 1) * Math.exp(-t / spec.noiseDecay)
 
-    const frequency = 55 + 130 * Math.exp(-t / 0.07)
+    const frequency =
+      spec.floor + (spec.start - spec.floor) * Math.exp(-t / spec.sweep)
     sweepPhase += (2 * Math.PI * frequency) / SAMPLE_RATE
-    const thud = Math.sin(sweepPhase) * Math.exp(-t / 0.11)
+    const thud = Math.sin(sweepPhase) * Math.exp(-t / spec.ring)
 
-    samples[i] = noise * 0.55 + thud * 0.9
+    samples[i] = noise * spec.noiseMix + thud * 0.9
   }
 
-  writeWav('impact.wav', normalise(lowpass(samples, 1400), 0.85))
+  writeWav(
+    `impact-${index + 1}.wav`,
+    normalise(lowpass(samples, spec.cutoff), 0.85)
+  )
 }
 
 engine()
-horn()
-impact()
+HORN_VARIANTS.forEach((spec, i) => horn(i, spec))
+KNOCK_VARIANTS.forEach((spec, i) => knock(i, spec))
