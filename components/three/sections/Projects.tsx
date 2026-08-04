@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { projects, wrap } from '../../../lib/content'
+import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
 import GroundText from '../GroundText'
@@ -83,6 +84,33 @@ export default function Projects() {
   // Overlapping radii; `useNearest` resolves to the closest board, so driving
   // along the row hands off from one to the next without a dead gap between.
   const activeIndex = useNearest(stands, SPACING * 0.8)
+
+  /**
+   * The boards are solid, which is what the row's spacing was always for: 8.5m
+   * apart and 4.2m wide leaves a 4.3m gap between each pair, so the row reads
+   * as a run of hoardings you drive along and can still cut through, rather
+   * than a wall.
+   *
+   * The collider ignores both the 0.16 rad lean and the lift an active board
+   * takes — a static box through the middle of both is within a few
+   * centimetres of the face at every point, and neither is worth a moving body.
+   */
+  const obstacles = useMemo<Obstacle[]>(
+    () =>
+      projects.map((_, i) => ({
+        kind: 'box',
+        position: toWorld(
+          [zx, zz],
+          (i - (projects.length - 1) / 2) * SPACING,
+          -CONTENT_START
+        ),
+        halfExtents: [BOARD.width * 0.5, BOARD.height * 0.55, BOARD.depth],
+        y: BOARD.height * 0.5 + 0.35,
+        yaw: WORLD_YAW,
+      })),
+    [zx, zz]
+  )
+  useObstacles(obstacles)
 
   return (
     <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>

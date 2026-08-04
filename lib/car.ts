@@ -1,4 +1,5 @@
 import * as CANNON from 'cannon-es'
+import { subscribeObstacles, type Obstacle } from './obstacles'
 
 /**
  * The car, ported from folio-2019's `World/Physics.js` (MIT).
@@ -87,6 +88,21 @@ export type CarActions = {
   boost: boolean
 }
 
+/**
+ * A heading to steer toward, rather than a direction to turn.
+ *
+ * This is the one input the keyboard cannot express and a thumb can: the stick
+ * points somewhere on the ground and the car turns until it is pointing there.
+ * `angle` is in the simulation's frame, so it is directly comparable with the
+ * car's own `angle` — see `bindJoystick` for where a screen gesture becomes one.
+ */
+export type Joystick = {
+  active: boolean
+  angle: number
+}
+
+const IDLE_JOYSTICK: Joystick = { active: false, angle: 0 }
+
 /* ------------------------------------------------------------------ */
 /* Shared read-only state                                              */
 /* ------------------------------------------------------------------ */
@@ -149,7 +165,16 @@ export class CarPhysics {
   forwardSpeed = 0
   goingForward = true
 
+  /**
+   * Reports a knock, with the impact speed along the contact normal in m/s.
+   * Set by whoever wants to hear about it; the simulation itself does not care.
+   */
+  onImpact: ((strength: number) => void) | null = null
+
   private readonly floorMaterial: CANNON.Material
+  private readonly floorBody: CANNON.Body
+  private readonly obstacleBodies = new Map<Obstacle, CANNON.Body>()
+  private unsubscribeObstacles: (() => void) | null = null
   private readonly worldForward = new CANNON.Vec3()
   private readonly oldPosition = new CANNON.Vec3()
   private deltaMs = 16
@@ -176,15 +201,19 @@ export class CarPhysics {
     // than carried over as decoration.
     this.floorMaterial = new CANNON.Material('floorMaterial')
 
+    // The default broadphase is O(n²) over every pair in the world, which was
+    // free when the world held a floor and a car. The scenery adds some seventy
+    // static bodies, and a sweep-and-prune pass sorts them out for nothing.
+    this.world.broadphase = new CANNON.SAPBroadphase(this.world)
+
     // An infinite plane rather than a big box: the world has no edges, so
     // driving off the far side of the map is impossible by construction.
-    this.world.addBody(
-      new CANNON.Body({
-        mass: 0,
-        shape: new CANNON.Plane(),
-        material: this.floorMaterial,
-      })
-    )
+    this.floorBody = new CANNON.Body({
+      mass: 0,
+      shape: new CANNON.Plane(),
+      material: this.floorMaterial,
+    })
+    this.world.addBody(this.floorBody)
 
     this.create()
   }
@@ -289,14 +318,85 @@ export class CarPhysics {
     this.attached = true
     this.vehicle.addToWorld(this.world)
     this.world.addEventListener('postStep', this.onPostStep)
+    this.chassisBody.addEventListener('collide', this.onCollide)
+    this.unsubscribeObstacles = subscribeObstacles(this.onObstacleChange)
   }
 
   detach() {
     if (!this.attached) return
     this.attached = false
     this.world.removeEventListener('postStep', this.onPostStep)
+    this.chassisBody.removeEventListener('collide', this.onCollide)
+    this.unsubscribeObstacles?.()
+    this.unsubscribeObstacles = null
+    for (const body of this.obstacleBodies.values()) this.world.removeBody(body)
+    this.obstacleBodies.clear()
     this.vehicle.removeFromWorld(this.world)
     carState.ready = false
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* Scenery                                                           */
+  /* ---------------------------------------------------------------- */
+
+  private onObstacleChange = (obstacle: Obstacle, action: 'add' | 'remove') => {
+    if (action === 'remove') {
+      const body = this.obstacleBodies.get(obstacle)
+      if (!body) return
+      this.world.removeBody(body)
+      this.obstacleBodies.delete(obstacle)
+      return
+    }
+
+    if (this.obstacleBodies.has(obstacle)) return
+
+    const [x, y] = toCannonGround(...obstacle.position)
+    const body = new CANNON.Body({ mass: 0, material: this.floorMaterial })
+    body.position.set(x, y, obstacle.y)
+
+    // A yaw about three's +y is a yaw about the simulation's +z, same sign:
+    // the frame conversion is a rotation about the shared ground axis, so it
+    // leaves rotations *within* the ground plane alone.
+    body.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(0, 0, 1),
+      obstacle.yaw ?? 0
+    )
+
+    if (obstacle.kind === 'box') {
+      const [hx, hy, hz] = obstacle.halfExtents
+      // The prop's height is its y; here it is z. Only the extents swap — the
+      // box is centred, so there is no offset to carry.
+      body.addShape(new CANNON.Box(new CANNON.Vec3(hx, hz, hy)))
+    } else {
+      // cannon-es builds cylinders along their own +y, which in a Z-up world
+      // lays them on their side. Standing one up is a per-shape orientation
+      // rather than a body rotation, so `yaw` above still means what it says.
+      const upright = new CANNON.Quaternion().setFromAxisAngle(
+        new CANNON.Vec3(1, 0, 0),
+        Math.PI * 0.5
+      )
+      body.addShape(
+        new CANNON.Cylinder(obstacle.radius, obstacle.radius, obstacle.height, 8),
+        new CANNON.Vec3(),
+        upright
+      )
+    }
+
+    this.world.addBody(body)
+    this.obstacleBodies.set(obstacle, body)
+  }
+
+  /**
+   * Knocks worth hearing about.
+   *
+   * The floor is filtered out because the car is in contact with it on every
+   * step and lands on it after every bump — passing those on would be a
+   * continuous rattle rather than an impact.
+   */
+  private onCollide = (event: { body: CANNON.Body; contact: CANNON.ContactEquation }) => {
+    if (!this.onImpact || event.body === this.floorBody) return
+    const strength = Math.abs(event.contact.getImpactVelocityAlongNormal())
+    if (strength > 1) this.onImpact(strength)
   }
 
   private onPostStep = () => {
@@ -400,8 +500,11 @@ export class CarPhysics {
     boost: false,
   }
 
-  step(deltaSeconds: number, actions: CarActions) {
+  private joystick: Joystick = IDLE_JOYSTICK
+
+  step(deltaSeconds: number, actions: CarActions, joystick = IDLE_JOYSTICK) {
     this.actions = actions
+    this.joystick = joystick
     this.deltaMs = Math.min(deltaSeconds * 1000, MAX_DELTA_MS)
 
     this.updateSteering()
@@ -414,7 +517,30 @@ export class CarPhysics {
   private updateSteering() {
     const steerStrength = this.deltaMs * CAR.controlsSteeringSpeed
 
-    if (this.actions.right) {
+    if (this.joystick.active) {
+      /**
+       * Steer toward a heading rather than by a rate, as folio's joystick does.
+       *
+       * The error is used as the steering angle directly, which is what makes
+       * the stick feel absolute: a heading 90° off locks the wheels over, and
+       * they unwind on their own as the car comes round to it, so there is no
+       * overshoot to correct and nothing to release. It also self-centres for
+       * free — pointing where you are already going is zero error.
+       *
+       * Negated because a positive `steering` turns the car clockwise, which is
+       * a *decreasing* angle in the simulation's frame.
+       */
+      let error = this.joystick.angle - this.angle
+      if (error > Math.PI) error -= Math.PI * 2
+      if (error < -Math.PI) error += Math.PI * 2
+
+      // Reversing flips which way the front wheels take the car, so a car
+      // backing up would otherwise steer itself away from the stick.
+      if (!this.goingForward && this.speed > 0.001) error = -error
+
+      // Left unclamped: the shared clamp below is the one that applies.
+      this.steering = -error
+    } else if (this.actions.right) {
       this.steering += steerStrength
     } else if (this.actions.left) {
       this.steering -= steerStrength

@@ -49,7 +49,7 @@ export default function Navbar() {
       <div className="flex items-center sticky top-0 bg-white justify-between md:justify-start px-2 py-3 md:p-5">
         <Masthead></Masthead>
         <div className="hidden md:flex flex-1 gap-x-5 justify-end font-body ">
-          {navButtons.map((btn, i) => (
+          {navButtons.map((btn) => (
             <Button
               text={btn.text}
               alt={btn.alt}

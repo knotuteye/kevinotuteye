@@ -2,8 +2,9 @@ import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { playHorn, playImpact, toggleMuted, updateEngine } from '../../lib/audio'
 import { CarPhysics, toThreeGround, type Spawn } from '../../lib/car'
-import { actions, bindControls } from '../../lib/controls'
+import { actions, bindControls, joystick } from '../../lib/controls'
 import { makeMatcap } from '../../lib/matcap'
 import { palette, world } from '../../lib/palette'
 import { createClayMaterial, createPureMaterial } from './materials/clay'
@@ -111,14 +112,7 @@ function convert(
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function Car({
-  spawn,
-  onReady,
-}: {
-  spawn: Spawn
-  /** Hands the simulation up, so a route change can respawn the car. */
-  onReady?: (physics: CarPhysics) => void
-}) {
+export default function Car({ spawn }: { spawn: Spawn }) {
   // Loading comes first so that suspending discards as little as possible —
   // anything created above a suspending hook is thrown away and rebuilt on
   // retry, and one of the things below is a physics world.
@@ -195,11 +189,20 @@ export default function Car({
 
   useEffect(() => {
     physics.attach()
-    return () => physics.dispose()
+    physics.onImpact = playImpact
+    return () => {
+      physics.onImpact = null
+      physics.dispose()
+    }
   }, [physics])
 
   useEffect(
-    () => bindControls((event) => event === 'reset' && physics.reset()),
+    () =>
+      bindControls((event) => {
+        if (event === 'reset') physics.reset()
+        else if (event === 'horn') playHorn()
+        else if (event === 'sound') toggleMuted()
+      }),
     [physics]
   )
 
@@ -230,7 +233,8 @@ export default function Car({
   )
 
   useFrame((_, delta) => {
-    physics.step(delta, actions)
+    physics.step(delta, actions, joystick)
+    updateEngine(physics.speed, physics.accelerating !== 0)
 
     const body = physics.chassisBody
     const chassis = chassisRef.current

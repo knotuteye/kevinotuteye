@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { experience, splitCompany, wrap } from '../../../lib/content'
+import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
 import GroundText from '../GroundText'
@@ -69,6 +70,22 @@ export default function Work() {
     [zx, zz]
   )
   const activeIndex = useNearest(rows, ROW_SPACING * 0.8)
+
+  // The markers stand at the edge of the column, well off the lane the car
+  // drives down, so making them solid costs the reader nothing and gives the
+  // one piece of geometry in this section some weight.
+  const obstacles = useMemo<Obstacle[]>(
+    () =>
+      experience.map((_, i) => ({
+        kind: 'box',
+        position: toWorld([zx, zz], -9, -(CONTENT_START + i * ROW_SPACING)),
+        halfExtents: [0.275, MARKER_HEIGHT * 0.5, 0.275],
+        y: MARKER_HEIGHT * 0.5,
+        yaw: WORLD_YAW,
+      })),
+    [zx, zz]
+  )
+  useObstacles(obstacles)
 
   return (
     <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>

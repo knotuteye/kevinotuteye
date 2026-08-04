@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useObstacles, type Obstacle } from '../../lib/obstacles'
 import { mulberry32, range } from '../../lib/rng'
 import { useClayMaterial } from './Clay'
 import GroundShadow from './Shadow'
@@ -10,6 +11,10 @@ import GroundShadow from './Shadow'
  * matcap does all the shading work, so a sphere and a cylinder are enough to
  * read as clay props. Placement is seeded so the world looks hand-arranged and
  * stays put between reloads.
+ *
+ * They are also solid. A tree you can drive through is scenery painted on a
+ * backdrop; one you cannot is a thing in the same world as the car, and the
+ * difference costs one cylinder each.
  */
 
 type Props = {
@@ -55,6 +60,38 @@ export default function Scatter({
     }
     return out
   }, [center, radius, count, seed, innerRadius])
+
+  /**
+   * Colliders, sized a little under the meshes rather than around them.
+   *
+   * A trunk is 0.32m across and its foliage is 1.4m; matching either exactly is
+   * wrong. Match the trunk and the car parks inside the canopy, match the
+   * canopy and it stops in mid-air. The compromise is a post a touch wider than
+   * the trunk, which reads as hitting the tree from every angle the camera
+   * offers.
+   */
+  const obstacles = useMemo<Obstacle[]>(
+    () =>
+      items.map((item) =>
+        item.kind === 'tree'
+          ? {
+              kind: 'cylinder',
+              position: [item.x, item.z],
+              radius: 0.24 * item.scale,
+              height: 2.4 * item.scale,
+              y: 1.2 * item.scale,
+            }
+          : {
+              kind: 'cylinder',
+              position: [item.x, item.z],
+              radius: 0.5 * item.scale,
+              height: 0.74 * item.scale,
+              y: 0.37 * item.scale,
+            }
+      ),
+    [items]
+  )
+  useObstacles(obstacles)
 
   return (
     <group>
