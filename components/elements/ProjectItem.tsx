@@ -1,4 +1,4 @@
-import { colors } from '../../Theme'
+import { colorAt, paletteNameAt } from '../../lib/palette'
 import TechItem from './TechItem'
 
 type Props = {
@@ -12,12 +12,12 @@ type Props = {
 }
 
 export default function ProjectItem({ project, index }: Props) {
-  const color = Object.keys(colors)[index % Object.keys(colors).length]
+  const color = paletteNameAt(index)
 
   return (
     <div
       key={project.name + index}
-      style={{ borderColor: colors[color] }}
+      style={{ borderColor: colorAt(index) }}
       className={`font-heading flex flex-col ml-3 gap-y-1 pl-10 border-dotted border-l-4`}
     >
       <div className={`font-bold text-${color}`}>{project.name}</div>

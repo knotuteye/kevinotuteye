@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, ReactElement, SetStateAction } from 'react'
 
 type Props = {
   buttons: Button[]
@@ -6,9 +6,11 @@ type Props = {
   setShow: Dispatch<SetStateAction<boolean>>
 }
 
+// React 19 removed the global JSX namespace; ReactElement is the direct
+// replacement for the old JSX.Element here.
 type Button = {
   text: string
-  icon?: JSX.Element
+  icon?: ReactElement
   onClick: () => void
   alt?: boolean
 }

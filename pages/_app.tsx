@@ -1,15 +1,17 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
-import 'tailwindcss/tailwind.css'
 import '../styles/globals.css'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Kevin Otuteye | Portfolio </title>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
       </Head>
-      <Component {...pageProps}></Component>
+      <Component {...pageProps} />
     </>
   )
 }

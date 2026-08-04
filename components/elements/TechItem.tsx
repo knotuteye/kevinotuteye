@@ -1,4 +1,4 @@
-import { colors } from '../../Theme'
+import { colorAt } from '../../lib/palette'
 
 type Props = {
   children: string
@@ -6,12 +6,10 @@ type Props = {
 }
 
 export default function TechItem({ children, index }: Props) {
-  const color =
-    Object.keys(colors)[index % Object.keys(colors).length]
   return (
     <div
       key={children}
-      style={{ borderColor: colors[color] }}
+      style={{ borderColor: colorAt(index) }}
       className={`flex h-8 px-3 items-center rounded-sm text-sm border`}
     >
       {children}

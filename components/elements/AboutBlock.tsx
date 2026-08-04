@@ -1,4 +1,4 @@
-import { colors } from '../../Theme'
+import { colorAt, paletteNameAt } from '../../lib/palette'
 
 type Props = {
   title: string
@@ -7,11 +7,11 @@ type Props = {
 }
 
 export default function AboutBlock({ title, index, children }: Props) {
-  const color = Object.keys(colors)[index % Object.keys(colors).length]
+  const color = paletteNameAt(index)
 
   return (
     <div
-      style={{ borderColor: colors[color] }}
+      style={{ borderColor: colorAt(index) }}
       className="flex flex-col ml-4 pl-4 md:pl-16 border-l-2 font-body"
     >
       <div className={`text-lg my-1 font-heading font-bold text-${color}`}>

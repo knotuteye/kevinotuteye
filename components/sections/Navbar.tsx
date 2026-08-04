@@ -1,4 +1,4 @@
-import { useRouter } from 'next/dist/client/router'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import Button from '../elements/Button'
 import Masthead from '../elements/Masthead'

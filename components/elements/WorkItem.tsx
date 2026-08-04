@@ -1,4 +1,4 @@
-import { colors } from '../../Theme'
+import { colorAt, paletteNameAt } from '../../lib/palette'
 import ProjectItem from './ProjectItem'
 
 type Props = {
@@ -19,12 +19,12 @@ type Props = {
 }
 
 export default function WorkItem({ workObject, index }: Props) {
-  const color = Object.keys(colors)[index % Object.keys(colors).length]
+  const color = paletteNameAt(index)
 
   return (
     <div
       key={workObject.company}
-      style={{ borderColor: colors[color] }}
+      style={{ borderColor: colorAt(index) }}
       className={'flex flex-col ml-4 pl-4 md:pl-16 border-l-2 font-body '}
     >
       <div

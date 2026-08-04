@@ -5,10 +5,7 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <meta
-            name="description"
-            content="Hey there. I'm Kevin Otuteye, a full stack developer and music enthusiast. Here are some of my works."
-          />
+          {/* Per-page description and OG tags live in components/Seo.tsx. */}
           <link rel="preconnect" href="https://fonts.gstatic.com" />
           <link
             href="https://fonts.googleapis.com/css2?family=Raleway&display=swap"
