@@ -42,7 +42,7 @@ const STRAPLINE_SIZE = 0.66
  * a collider under flat paint with nothing standing there would be an invisible
  * kerb. Giving the paint something to sit on is what makes the stop legible.
  */
-const PLATE = { height: 0.34, depth: 1.5, margin: 1.1 }
+const PLATE = { height: 0.34, depth: 1.5, margin: 0.9 }
 
 const text3d = {
   font: '/fonts/montserrat-700.typeface.json',
@@ -242,7 +242,7 @@ export function IntroShadows() {
           is a metre wide of its object is a soft edge nobody reads. */}
       <GroundShadow
         position={place(STRAPLINE_Z)}
-        size={[15.5, 3]}
+        size={[15, 2.9]}
         intensity={0.7}
         height={PLATE.height}
         yaw={WORLD_YAW}
