@@ -27,8 +27,15 @@ import { useNearest } from '../useNearest'
  */
 
 const SPACING = 8.5
-/** Clears the zone marker's footprint. */
-const CONTENT_START = 6
+/**
+ * Clears the zone marker's footprint.
+ *
+ * Measured against an *open* board: its copy is painted on the ground in front
+ * of it and runs some 8m back toward the camera, so a start that only cleared
+ * the boards themselves left the active project's blurb lying across the zone
+ * outline and under its floating label.
+ */
+const CONTENT_START = 12.5
 const BOARD = { width: 4.2, height: 2.6, depth: 0.32 }
 
 /** Inset from the slab's edge, so the board reads as a frame around the face. */
@@ -231,57 +238,70 @@ export default function Projects() {
   useObstacles(obstacles)
 
   return (
-    <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
-      {projects.map((project, i) => {
-        const x = (i - (projects.length - 1) / 2) * SPACING
-        const isActive = activeIndex === i
+    <>
+      {/* Outside the yawed group, in world coordinates: the sun offset is a
+          world direction, so a shadow parented to the group below would have
+          the section's yaw and origin applied to it twice and end up nowhere
+          near the board casting it. */}
+      {projects.map((project, i) => (
+        <GroundShadow
+          key={`${project.name}-shadow`}
+          position={toWorld(
+            [zx, zz],
+            (i - (projects.length - 1) / 2) * SPACING,
+            -CONTENT_START
+          )}
+          size={[BOARD.width * 1.5, BOARD.width * 1.1]}
+          height={BOARD.height * 0.6}
+          intensity={0.85}
+          yaw={WORLD_YAW}
+        />
+      ))}
 
-        return (
-          <group key={project.name} position={[x, 0, -CONTENT_START]}>
-            <Board project={project} index={i + 2} active={isActive} />
+      <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
+        {projects.map((project, i) => {
+          const x = (i - (projects.length - 1) / 2) * SPACING
+          const isActive = activeIndex === i
 
-            <GroundShadow
-              position={toWorld([zx, zz], x, -CONTENT_START)}
-              size={[BOARD.width * 1.5, BOARD.width * 1.1]}
-              height={BOARD.height * 0.6}
-              intensity={0.85}
-              yaw={WORLD_YAW}
-            />
+          return (
+            <group key={project.name} position={[x, 0, -CONTENT_START]}>
+              <Board project={project} index={i + 2} active={isActive} />
 
-            <GroundText
-              position={[0, 3.1]}
-              size={0.5}
-              anchorX="center"
-              maxWidth={8}
-            >
-              {wrap(project.name.split(',')[0], 26, 2)}
-            </GroundText>
+              <GroundText
+                position={[0, 3.1]}
+                size={0.5}
+                anchorX="center"
+                maxWidth={8}
+              >
+                {wrap(project.name.split(',')[0], 26, 2)}
+              </GroundText>
 
-            {isActive ? (
-              <>
-                <GroundText
-                  position={[0, 5.0]}
-                  size={0.3}
-                  anchorX="center"
-                  opacity={0.85}
-                  maxWidth={8.5}
-                >
-                  {wrap(project.about, 42, 4)}
-                </GroundText>
-                <GroundText
-                  position={[0, 7.4]}
-                  size={0.26}
-                  anchorX="center"
-                  opacity={0.6}
-                  maxWidth={8.5}
-                >
-                  {project.technologies.slice(0, 6).join('  ·  ')}
-                </GroundText>
-              </>
-            ) : null}
-          </group>
-        )
-      })}
-    </group>
+              {isActive ? (
+                <>
+                  <GroundText
+                    position={[0, 5.0]}
+                    size={0.3}
+                    anchorX="center"
+                    opacity={0.85}
+                    maxWidth={8.5}
+                  >
+                    {wrap(project.about, 42, 4)}
+                  </GroundText>
+                  <GroundText
+                    position={[0, 7.4]}
+                    size={0.26}
+                    anchorX="center"
+                    opacity={0.6}
+                    maxWidth={8.5}
+                  >
+                    {project.technologies.slice(0, 6).join('  ·  ')}
+                  </GroundText>
+                </>
+              ) : null}
+            </group>
+          )
+        })}
+      </group>
+    </>
   )
 }

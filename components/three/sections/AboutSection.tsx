@@ -16,8 +16,17 @@ import GroundShadow from '../Shadow'
  */
 
 const COL_WIDTH = 14
-/** Clears the zone marker's footprint. */
-const CONTENT_START = 6
+/** Where the summary sits: past the marker, before the columns. */
+const SUMMARY_START = 5.4
+/**
+ * Where the columns start, measured to the *nearest* line of the first block.
+ *
+ * A block is anchored on its title and its lines run back toward the camera,
+ * so laying the anchors out on a running cursor put each block's copy in the
+ * space in front of it — and the first block's copy across the zone marker.
+ * The cursor below tracks that near edge instead.
+ */
+const CONTENT_START = 8
 const LINE_HEIGHT = 0.62
 const TITLE_GAP = 1.0
 const BLOCK_GAP = 2.4
@@ -81,9 +90,12 @@ export default function AboutSection() {
     const cursors = [CONTENT_START, CONTENT_START]
     return blocks.map((block, index) => {
       const col = block.title === 'SKILLS' ? 1 : 0
-      const z = cursors[col]
-      cursors[col] +=
-        TITLE_GAP + renderedLines(block.lines) * LINE_HEIGHT + BLOCK_GAP
+      const height = TITLE_GAP + renderedLines(block.lines) * LINE_HEIGHT
+      // The cursor is the near edge of the space still free, and a block fills
+      // it backwards from its title — so the title goes a whole block-height
+      // beyond where the last one ended.
+      const z = cursors[col] + height
+      cursors[col] = z + BLOCK_GAP
       return { ...block, col, z, index }
     })
   }, [])
@@ -106,50 +118,65 @@ export default function AboutSection() {
   useObstacles(obstacles)
 
   return (
-    <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
-      <GroundText
-        position={[-COL_WIDTH, 0.6]}
-        size={0.42}
-        opacity={0.92}
-        maxWidth={26}
-      >
-        {wrap(about.summary, 74, 3)}
-      </GroundText>
+    <>
+      {/* Outside the yawed group, in world coordinates: the sun offset is a
+          world direction, so a shadow parented to the group below would have
+          the section's yaw and origin applied to it a second time and land
+          nowhere near its pillar. */}
+      {placed.map((block) => (
+        <GroundShadow
+          key={`${block.title}-shadow`}
+          position={toWorld(
+            [zx, zz],
+            -COL_WIDTH + block.col * (COL_WIDTH + 2) - 1.1,
+            -block.z
+          )}
+          size={[1.5, 1.5]}
+          height={1.1}
+          intensity={0.8}
+        />
+      ))}
 
-      {placed.map((block) => {
-        const x = -COL_WIDTH + block.col * (COL_WIDTH + 2)
+      <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
+        <GroundText
+          position={[-COL_WIDTH, -SUMMARY_START]}
+          size={0.42}
+          opacity={0.92}
+          maxWidth={26}
+        >
+          {wrap(about.summary, 74, 3)}
+        </GroundText>
 
-        return (
-          <group key={block.title} position={[x, 0, -block.z]}>
-            <Pillar index={block.index} x={-1.1} />
-            <GroundShadow
-              position={toWorld([zx, zz], x - 1.1, -block.z)}
-              size={[1.5, 1.5]}
-              height={1.1}
-              intensity={0.8}
-            />
+        {placed.map((block) => {
+          const x = -COL_WIDTH + block.col * (COL_WIDTH + 2)
 
-            <GroundText position={[0, 0]} size={0.6} letterSpacing={0.16}>
-              {block.title}
-            </GroundText>
+          return (
+            <group key={block.title} position={[x, 0, -block.z]}>
+              <Pillar index={block.index} x={-1.1} />
 
-            {block.lines.map((line, i) => (
-              <GroundText
-                key={`${block.title}-${i}`}
-                position={[
-                  0,
-                  TITLE_GAP + renderedLines(block.lines.slice(0, i)) * LINE_HEIGHT,
-                ]}
-                size={0.29}
-                opacity={i % 2 === 0 ? 0.92 : 0.66}
-                maxWidth={COL_WIDTH - 1}
-              >
-                {line}
+              <GroundText position={[0, 0]} size={0.6} letterSpacing={0.16}>
+                {block.title}
               </GroundText>
-            ))}
-          </group>
-        )
-      })}
-    </group>
+
+              {block.lines.map((line, i) => (
+                <GroundText
+                  key={`${block.title}-${i}`}
+                  position={[
+                    0,
+                    TITLE_GAP +
+                      renderedLines(block.lines.slice(0, i)) * LINE_HEIGHT,
+                  ]}
+                  size={0.29}
+                  opacity={i % 2 === 0 ? 0.92 : 0.66}
+                  maxWidth={COL_WIDTH - 1}
+                >
+                  {line}
+                </GroundText>
+              ))}
+            </group>
+          )
+        })}
+      </group>
+    </>
   )
 }

@@ -22,8 +22,15 @@ import { useNearest } from '../useNearest'
 
 const ROW_SPACING = 7.5
 const MARKER_HEIGHT = 0.9
-/** Clears the zone marker's footprint so rows never sit under it. */
-const CONTENT_START = 7
+/**
+ * Clears the zone marker's footprint so rows never sit under it.
+ *
+ * Measured against an *open* row, not a closed one. A row's copy runs from its
+ * marker back toward the camera — nearly 7m of it once the projects unfold —
+ * so a start that only cleared the row's heading put the first role's project
+ * list underneath the zone's outline and its floating label.
+ */
+const CONTENT_START = 12
 
 function RoleMarker({
   index,
@@ -88,73 +95,83 @@ export default function Work() {
   useObstacles(obstacles)
 
   return (
-    <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
-      {experience.map((role, i) => {
-        const z = -(CONTENT_START + i * ROW_SPACING)
-        const { name, location } = splitCompany(role.company)
-        const isActive = activeIndex === i
-        const id = `work-${i}`
+    <>
+      {/* Outside the yawed group, in world coordinates: the sun offset is a
+          world direction, and a shadow mounted inside the group below would
+          have it rotated by WORLD_YAW and translated by the section's origin a
+          second time — landing it a section's width away from its marker. */}
+      {experience.map((_, i) => (
+        <GroundShadow
+          key={`work-shadow-${i}`}
+          position={toWorld([zx, zz], -9, -(CONTENT_START + i * ROW_SPACING))}
+          size={[1.6, 1.6]}
+          height={MARKER_HEIGHT}
+          intensity={0.8}
+        />
+      ))}
 
-        return (
-          <group key={id} position={[0, 0, z]}>
-            <RoleMarker index={i} x={-9} z={0} active={isActive} />
-            <GroundShadow
-              position={toWorld([zx, zz], -9, z)}
-              size={[1.6, 1.6]}
-              height={MARKER_HEIGHT}
-              intensity={0.8}
-            />
+      <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
+        {experience.map((role, i) => {
+          const z = -(CONTENT_START + i * ROW_SPACING)
+          const { name, location } = splitCompany(role.company)
+          const isActive = activeIndex === i
+          const id = `work-${i}`
 
-            <GroundText
-              position={[-7.9, -0.75]}
-              size={0.88}
-              letterSpacing={0.05}
-            >
-              {name}
-            </GroundText>
+          return (
+            <group key={id} position={[0, 0, z]}>
+              <RoleMarker index={i} x={-9} z={0} active={isActive} />
 
-            <GroundText position={[-7.9, 0.15]} size={0.42} opacity={0.92}>
-              {role.role}
-            </GroundText>
+              <GroundText
+                position={[-7.9, -0.75]}
+                size={0.88}
+                letterSpacing={0.05}
+              >
+                {name}
+              </GroundText>
 
-            <GroundText position={[-7.9, 0.85]} size={0.34} opacity={0.7}>
-              {`${role.startDate} — ${role.endDate}${location ? `  ·  ${location}` : ''}`}
-            </GroundText>
+              <GroundText position={[-7.9, 0.15]} size={0.42} opacity={0.92}>
+                {role.role}
+              </GroundText>
 
-            {isActive ? (
-              <group>
-                <GroundText
-                  position={[-7.9, 2.1]}
-                  size={0.33}
-                  opacity={0.85}
-                  maxWidth={17}
-                >
-                  {wrap(role.aboutCompany, 74, 3)}
-                </GroundText>
+              <GroundText position={[-7.9, 0.85]} size={0.34} opacity={0.7}>
+                {`${role.startDate} — ${role.endDate}${location ? `  ·  ${location}` : ''}`}
+              </GroundText>
 
-                {role.projects.slice(0, 3).map((project, p) => (
-                  <group key={project.name}>
-                    <GroundText
-                      position={[-7.4, 4.1 + p * 1.15]}
-                      size={0.36}
-                      opacity={0.95}
-                    >
-                      {`› ${project.name}`}
-                    </GroundText>
-                    <GroundText
-                      position={[-7.0, 4.68 + p * 1.15]}
-                      size={0.26}
-                      opacity={0.62}
-                    >
-                      {project.technologies.slice(0, 8).join('  ·  ')}
-                    </GroundText>
-                  </group>
-                ))}
-              </group>
-            ) : null}
-          </group>
-        )
-      })}
-    </group>
+              {isActive ? (
+                <group>
+                  <GroundText
+                    position={[-7.9, 2.1]}
+                    size={0.33}
+                    opacity={0.85}
+                    maxWidth={17}
+                  >
+                    {wrap(role.aboutCompany, 74, 3)}
+                  </GroundText>
+
+                  {role.projects.slice(0, 3).map((project, p) => (
+                    <group key={project.name}>
+                      <GroundText
+                        position={[-7.4, 4.1 + p * 1.15]}
+                        size={0.36}
+                        opacity={0.95}
+                      >
+                        {`› ${project.name}`}
+                      </GroundText>
+                      <GroundText
+                        position={[-7.0, 4.68 + p * 1.15]}
+                        size={0.26}
+                        opacity={0.62}
+                      >
+                        {project.technologies.slice(0, 8).join('  ·  ')}
+                      </GroundText>
+                    </group>
+                  ))}
+                </group>
+              ) : null}
+            </group>
+          )
+        })}
+      </group>
+    </>
   )
 }

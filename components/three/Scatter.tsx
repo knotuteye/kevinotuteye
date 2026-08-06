@@ -209,8 +209,13 @@ export default function Scatter({
               </mesh>
             )}
 
+            {/* Local to the trunk's group, which is translated but not
+                rotated — so the sun offset still lands in world axes. Passing
+                the tree's world position here would have applied the group's
+                translation a second time and thrown the shadow twice as far
+                from the origin as the tree it belongs to. */}
             <GroundShadow
-              position={[item.x, item.z]}
+              position={[0, 0]}
               size={[item.scale * 2.4, item.scale * 2.4]}
               intensity={0.8}
               height={item.scale * 1.1}

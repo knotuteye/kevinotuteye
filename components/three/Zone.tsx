@@ -8,6 +8,8 @@ import {
   getWorldState,
   isInsideZone,
   setActiveZone,
+  toLocal,
+  WORLD_YAW,
   type Zone as ZoneData,
 } from '../../lib/world'
 
@@ -263,7 +265,12 @@ export default function Zone({ zone, onEnter, onLeave }: Props) {
     const car = getCarState()
     if (!car.ready) return
 
-    const nowAtMarker = Math.abs(car.x - x) < hx && Math.abs(car.z - z) < hz
+    // In the marker's own frame, which is the section's — see the yaw on the
+    // group below. Tested in world axes this was a rectangle at 38° to the one
+    // being drawn, so the fence sprang up before the car reached the outline
+    // on one side and after it had crossed on the other.
+    const [localX, localZ] = toLocal(zone.position, car.x, car.z)
+    const nowAtMarker = Math.abs(localX) < hx && Math.abs(localZ) < hz
     if (nowAtMarker !== atMarker.current) {
       atMarker.current = nowAtMarker
       if (nowAtMarker) enter()
@@ -287,7 +294,17 @@ export default function Zone({ zone, onEnter, onLeave }: Props) {
   })
 
   return (
-    <group position={[x, 0, z]}>
+    /**
+     * Yawed to WORLD_YAW, like every section's content and every ground decal
+     * in the world.
+     *
+     * Without it the marker was the one rectangle on the plain drawn on world
+     * axes, so it sat at 38° to the columns of copy it introduces — its
+     * corners cut into the first rows of text, and its label faced away from
+     * the fixed camera. Squared up, its footprint is exactly the `halfExtents`
+     * the sections space their content against.
+     */
+    <group position={[x, 0, z]} rotation={[0, WORLD_YAW, 0]}>
       {/* Ground outline */}
       <mesh
         material={borderMaterial}

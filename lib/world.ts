@@ -40,6 +40,27 @@ export function toWorld(
   ]
 }
 
+/**
+ * The inverse of `toWorld`: a world ground position in a section's local
+ * (yawed) space, relative to its origin.
+ *
+ * Anything that has to reason about *where in a section* something is — is the
+ * car on the marker, is it still in the region — has to ask in this frame. An
+ * axis-aligned test in world space would be a box at 38° to the content it is
+ * meant to describe.
+ */
+export function toLocal(
+  origin: [number, number],
+  x: number,
+  z: number
+): [number, number] {
+  const dx = x - origin[0]
+  const dz = z - origin[1]
+  const cos = Math.cos(WORLD_YAW)
+  const sin = Math.sin(WORLD_YAW)
+  return [dx * cos - dz * sin, dx * sin + dz * cos]
+}
+
 export type Zone = {
   id: ZoneId
   label: string
@@ -68,14 +89,7 @@ export type Zone = {
  * be a box at 38° to the content it is meant to contain.
  */
 export function isInsideZone(zone: Zone, x: number, z: number): boolean {
-  const dx = x - zone.position[0]
-  const dz = z - zone.position[1]
-
-  const cos = Math.cos(WORLD_YAW)
-  const sin = Math.sin(WORLD_YAW)
-  // Inverse of the group's R_y(WORLD_YAW).
-  const localX = dx * cos - dz * sin
-  const localZ = dx * sin + dz * cos
+  const [localX, localZ] = toLocal(zone.position, x, z)
 
   return (
     Math.abs(localX) < zone.region.halfWidth &&
@@ -105,8 +119,9 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/work',
     position: [55, -10],
     halfExtents: [6, 3.5],
-    // Eight roles at 7.5m spacing, plus the run-up to the first one.
-    region: { halfWidth: 16, depth: 66 },
+    // Eight roles at 7.5m spacing, plus the run-up to the first one — which is
+    // long, because an open role's copy runs back toward the marker.
+    region: { halfWidth: 16, depth: 74 },
   },
   projects: {
     id: 'projects',

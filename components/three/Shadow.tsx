@@ -18,11 +18,23 @@ import { world } from '../../lib/palette'
 export const shadowAlpha = { value: 0 }
 
 /**
- * The virtual sun. Nothing in the scene is lit by it — it exists only to
- * decide which way shadows slide, and it matches the key direction baked into
- * the matcap generator so the two agree.
+ * The virtual sun. Nothing in the scene is lit by it — it exists only to decide
+ * which way shadows slide, and it has to agree with the key direction baked
+ * into the matcap generator or every object is lit from one side and shadowed
+ * on the same one.
+ *
+ * Agreeing is not the same as copying: a matcap's key (`lib/matcap.ts`, KEY)
+ * lives in *view* space, and this is a world direction. Converting it through
+ * the camera's fixed basis — the azimuth never changes, only the elevation, and
+ * that only between the two framings in `Camera.tsx` — puts the key at roughly
+ * (-0.24, 0.88, 0.42) at the driving angle and (-0.40, 0.89, 0.22) at the
+ * reading one. This is the midpoint, so shadows fall right and away from the
+ * camera at both.
+ *
+ * The old value had the z sign inverted, which threw every shadow toward the
+ * viewer — objects appeared to float over a shadow lying in front of them.
  */
-const SUN = { x: -0.45, y: 0.72, z: -0.62 }
+const SUN = { x: -0.32, y: 0.88, z: 0.33 }
 
 /** How far a shadow slides from an object sitting at `height`. */
 export function shadowOffsetFor(height: number): [number, number] {
@@ -91,8 +103,11 @@ type Props = {
   height?: number
   /**
    * Spins the quad within the ground plane, for shadows under geometry that is
-   * itself yawed. The sun offset is always applied in world axes, so callers
-   * must place these in world space rather than inside a rotated group.
+   * itself yawed. The sun offset is always applied in the parent's axes, so a
+   * shadow must never be mounted inside a *rotated* group — sections lay their
+   * content out yawed by WORLD_YAW and have to hang their shadows outside that
+   * group, in world coordinates. A merely translated parent is fine, since its
+   * axes are still the world's.
    */
   yaw?: number
   /**
