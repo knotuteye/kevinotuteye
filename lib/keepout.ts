@@ -159,8 +159,16 @@ export const SIGNPOSTS = ZONE_LIST.filter((zone) => zone.id !== 'intro').map(
   }
 )
 
-/** The arrow and its label, as one box in the frame the label is yawed to. */
-const SIGN_AREAS: KeepOut[] = SIGNPOSTS.map((sign) => ({
+/**
+ * The arrow and its label, as one box in the frame the label is yawed to.
+ *
+ * Exported because the paving has to clear these too, and for a reason scenery
+ * does not have: every trail leaves the spawn along a zone's bearing, and the
+ * sign for that zone is placed on that same bearing. The two are not near each
+ * other by accident — they are collinear by construction, so a trail that does
+ * not ask lays slabs through its own arrow.
+ */
+export const SIGN_AREAS: KeepOut[] = SIGNPOSTS.map((sign) => ({
   position: [
     sign.x + (SIGN_LABEL_OFFSET / 2) * Math.sin(WORLD_YAW),
     sign.z + (SIGN_LABEL_OFFSET / 2) * Math.cos(WORLD_YAW),

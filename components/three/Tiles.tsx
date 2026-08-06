@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { isClear, SIGN_AREAS } from '../../lib/keepout'
 import { mulberry32, range } from '../../lib/rng'
 import { INTRO_SPAWN, ZONE_LIST } from '../../lib/world'
 import { useClayMaterial } from './Clay'
@@ -39,6 +40,16 @@ const TILE = { size: 0.95, thickness: 0.07 }
  * yawed with it is a second thing to keep in sync.
  */
 const NAME_CLEARANCE = 13
+
+/**
+ * A slab's own footprint, as a radius.
+ *
+ * The keep-out test is a point test, so the thing being placed has to declare
+ * how much of itself hangs off that point. A slab is square and yawed to the
+ * route, so the honest answer is its half-diagonal — anything less leaves a
+ * corner over the arrow at the angles where it matters.
+ */
+const TILE_CLEARANCE = TILE.size * Math.SQRT1_2
 
 type Tile = { x: number; z: number; yaw: number; accent: boolean }
 
@@ -82,6 +93,12 @@ function tilePath(
       from[1] + dirZ * along + tanZ * side + (rand() - 0.5) * POSITION_RANDOMNESS
 
     if (Math.hypot(x, z) < NAME_CLEARANCE) continue
+
+    // The signs stand on these routes, not beside them, so the paving parts
+    // around each one and picks up on the far side. Tested after the jitter is
+    // applied, because it is the slab's final resting place that has to be
+    // clear, not the point on the centreline it started from.
+    if (!isClear(SIGN_AREAS, x, z, TILE_CLEARANCE)) continue
 
     tiles.push({
       x,
