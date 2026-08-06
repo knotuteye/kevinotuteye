@@ -114,7 +114,7 @@ export default async function handler(
           <div
             style={{ display: 'flex', fontSize: 28, letterSpacing: 10, color: '#ffffff' }}
           >
-            FULL STACK · MUSIC
+            FULL STACK ENGINEER
           </div>
           <div
             style={{

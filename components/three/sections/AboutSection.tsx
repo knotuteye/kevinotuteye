@@ -1,5 +1,11 @@
 import { useMemo } from 'react'
 import { about, wrap } from '../../../lib/content'
+import {
+  ABOUT_BLOCKS,
+  ABOUT_COL_WIDTH,
+  ABOUT_SUMMARY_START,
+  aboutColumnX,
+} from '../../../lib/layout'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
@@ -10,26 +16,13 @@ import GroundShadow from '../Shadow'
  * Background, painted flat on the ground in blocks — education, skills,
  * certifications, recognition, languages.
  *
- * Blocks are laid into two columns, each with its own running cursor rather
- * than a fixed grid. Their heights differ wildly (skills has six categories,
- * languages has two), and a fixed row height silently overlaps them.
+ * Where the blocks fall is `lib/layout`'s answer, not this file's: the tour
+ * drives to each one in turn, so the running cursor that stacks them has two
+ * readers and belongs to neither.
  */
 
-const COL_WIDTH = 14
-/** Where the summary sits: past the marker, before the columns. */
-const SUMMARY_START = 5.4
-/**
- * Where the columns start, measured to the *nearest* line of the first block.
- *
- * A block is anchored on its title and its lines run back toward the camera,
- * so laying the anchors out on a running cursor put each block's copy in the
- * space in front of it — and the first block's copy across the zone marker.
- * The cursor below tracks that near edge instead.
- */
-const CONTENT_START = 8
-const LINE_HEIGHT = 0.62
-const TITLE_GAP = 1.0
-const BLOCK_GAP = 2.4
+/** The pillar stands a little to the left of its block's copy. */
+const PILLAR_OFFSET = -1.1
 
 function Pillar({ index, x }: { index: number; x: number }) {
   const material = useClayMaterial({ index })
@@ -40,80 +33,23 @@ function Pillar({ index, x }: { index: number; x: number }) {
   )
 }
 
-/** wrap() can return multi-line strings, so count rendered lines, not entries. */
-function renderedLines(lines: string[]) {
-  return lines.reduce((n, line) => n + line.split('\n').length, 0)
-}
-
 export default function AboutSection() {
   const [zx, zz] = ZONES.about.position
 
-  // Memoised as one unit because the layout below is a running cursor: the
-  // blocks and their positions are computed together or not at all, and the
-  // pillars' colliders need identities that survive a render.
-  const placed = useMemo(() => {
-    const blocks: { title: string; lines: string[] }[] = [
-      {
-        title: 'EDUCATION',
-        lines: about.education.flatMap((e) => [
-          e.qualification,
-          `${e.institution.replace(/\s*\(.*\)\s*/, '')} · ${e.year}`,
-          ...(e.highlights ?? []).map((h) => wrap(h, 40, 2)),
-        ]),
-      },
-      {
-        title: 'CERTIFICATIONS',
-        lines: about.certifications.map((c) => `${c.name} · ${c.year}`),
-      },
-      {
-        title: 'RECOGNITION',
-        lines: about.recognition.flatMap((r) => [
-          r.title,
-          `${r.detail} · ${r.year}`,
-        ]),
-      },
-      {
-        title: 'LANGUAGES',
-        lines: about.languages.map((l) => `${l.language} — ${l.proficiency}`),
-      },
-      {
-        title: 'SKILLS',
-        lines: about.skills.flatMap((s) => [
-          s.category,
-          wrap(s.items.join('  ·  '), 40, 2),
-        ]),
-      },
-    ]
-
-    // Skills sits alone in the right column — it is taller than the other four
-    // combined, so pairing it with anything would leave a ragged hole.
-    const cursors = [CONTENT_START, CONTENT_START]
-    return blocks.map((block, index) => {
-      const col = block.title === 'SKILLS' ? 1 : 0
-      const height = TITLE_GAP + renderedLines(block.lines) * LINE_HEIGHT
-      // The cursor is the near edge of the space still free, and a block fills
-      // it backwards from its title — so the title goes a whole block-height
-      // beyond where the last one ended.
-      const z = cursors[col] + height
-      cursors[col] = z + BLOCK_GAP
-      return { ...block, col, z, index }
-    })
-  }, [])
-
   const obstacles = useMemo<Obstacle[]>(
     () =>
-      placed.map((block) => ({
+      ABOUT_BLOCKS.map((block) => ({
         kind: 'cylinder',
         position: toWorld(
           [zx, zz],
-          -COL_WIDTH + block.col * (COL_WIDTH + 2) - 1.1,
+          aboutColumnX(block.col) + PILLAR_OFFSET,
           -block.z
         ),
         radius: 0.28,
         height: 1.1,
         y: 0.55,
       })),
-    [placed, zx, zz]
+    [zx, zz]
   )
   useObstacles(obstacles)
 
@@ -123,12 +59,12 @@ export default function AboutSection() {
           world direction, so a shadow parented to the group below would have
           the section's yaw and origin applied to it a second time and land
           nowhere near its pillar. */}
-      {placed.map((block) => (
+      {ABOUT_BLOCKS.map((block) => (
         <GroundShadow
           key={`${block.title}-shadow`}
           position={toWorld(
             [zx, zz],
-            -COL_WIDTH + block.col * (COL_WIDTH + 2) - 1.1,
+            aboutColumnX(block.col) + PILLAR_OFFSET,
             -block.z
           )}
           size={[1.5, 1.5]}
@@ -139,7 +75,7 @@ export default function AboutSection() {
 
       <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
         <GroundText
-          position={[-COL_WIDTH, -SUMMARY_START]}
+          position={[-ABOUT_COL_WIDTH, -ABOUT_SUMMARY_START]}
           size={0.42}
           opacity={0.92}
           maxWidth={26}
@@ -147,12 +83,12 @@ export default function AboutSection() {
           {wrap(about.summary, 74, 3)}
         </GroundText>
 
-        {placed.map((block) => {
-          const x = -COL_WIDTH + block.col * (COL_WIDTH + 2)
+        {ABOUT_BLOCKS.map((block) => {
+          const x = aboutColumnX(block.col)
 
           return (
             <group key={block.title} position={[x, 0, -block.z]}>
-              <Pillar index={block.index} x={-1.1} />
+              <Pillar index={block.index} x={PILLAR_OFFSET} />
 
               <GroundText position={[0, 0]} size={0.6} letterSpacing={0.16}>
                 {block.title}
@@ -161,14 +97,10 @@ export default function AboutSection() {
               {block.lines.map((line, i) => (
                 <GroundText
                   key={`${block.title}-${i}`}
-                  position={[
-                    0,
-                    TITLE_GAP +
-                      renderedLines(block.lines.slice(0, i)) * LINE_HEIGHT,
-                  ]}
+                  position={[0, block.offsets[i]]}
                   size={0.29}
                   opacity={i % 2 === 0 ? 0.92 : 0.66}
-                  maxWidth={COL_WIDTH - 1}
+                  maxWidth={ABOUT_COL_WIDTH - 1}
                 >
                   {line}
                 </GroundText>

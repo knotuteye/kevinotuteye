@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
 import { contactPoints } from '../../../lib/content'
 import { usePublishInteraction } from '../../../lib/interact'
+import {
+  CONTACT_COLUMNS,
+  CONTACT_CONTENT_START,
+  CONTACT_SPACING,
+  CONTACT_STAND_OFFSET,
+} from '../../../lib/layout'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
@@ -21,16 +27,6 @@ import { useNearest } from '../useNearest'
  * a post with the handle painted on the ground in front of it reads the same at
  * a glance as it does parked, which a 4.2m screenshot does not.
  */
-
-const SPACING = 6
-/**
- * Clears the marker's footprint.
- *
- * Shorter than the equivalent in Work or Projects, and it can be: a plinth's
- * copy is two lines directly in front of it rather than a paragraph running
- * back toward the camera, so there is nothing to collide with the zone outline.
- */
-const CONTENT_START = 9.5
 
 const PLINTH = { width: 1.0, height: 1.7, depth: 1.0 }
 const CAP_HEIGHT = 0.26
@@ -65,18 +61,18 @@ export default function Contact() {
 
   const stands = useMemo(
     () =>
-      contactPoints.map((_, i) =>
+      CONTACT_COLUMNS.map((x) =>
         toWorld(
           [zx, zz],
-          (i - (contactPoints.length - 1) / 2) * SPACING,
+          x,
           // Measured a little in front of the row, so a plinth wakes as you
           // pull up facing it rather than when you clip its base.
-          -CONTENT_START + 2.5
+          -CONTACT_CONTENT_START + CONTACT_STAND_OFFSET
         )
       ),
     [zx, zz]
   )
-  const activeIndex = useNearest(stands, SPACING * 0.85)
+  const activeIndex = useNearest(stands, CONTACT_SPACING * 0.85)
 
   const active = activeIndex === null ? null : contactPoints[activeIndex]
 
@@ -104,13 +100,9 @@ export default function Contact() {
 
   const obstacles = useMemo<Obstacle[]>(
     () =>
-      contactPoints.map((_, i) => ({
+      CONTACT_COLUMNS.map((x) => ({
         kind: 'box',
-        position: toWorld(
-          [zx, zz],
-          (i - (contactPoints.length - 1) / 2) * SPACING,
-          -CONTENT_START
-        ),
+        position: toWorld([zx, zz], x, -CONTACT_CONTENT_START),
         halfExtents: [PLINTH.width / 2, PLINTH.height / 2, PLINTH.depth / 2],
         y: PLINTH.height / 2,
         yaw: WORLD_YAW,
@@ -127,11 +119,7 @@ export default function Contact() {
       {contactPoints.map((point, i) => (
         <GroundShadow
           key={`${point.id}-shadow`}
-          position={toWorld(
-            [zx, zz],
-            (i - (contactPoints.length - 1) / 2) * SPACING,
-            -CONTENT_START
-          )}
+          position={toWorld([zx, zz], CONTACT_COLUMNS[i], -CONTACT_CONTENT_START)}
           size={[2.2, 2.2]}
           height={PLINTH.height}
           intensity={0.85}
@@ -148,7 +136,7 @@ export default function Contact() {
             the button, on touch — so a line of ground type saying "press E"
             would be wrong on every phone that read it. */}
         <GroundText
-          position={[0, -CONTENT_START + 4.9]}
+          position={[0, -CONTACT_CONTENT_START + 4.9]}
           size={0.44}
           anchorX="center"
           opacity={0.9}
@@ -158,11 +146,11 @@ export default function Contact() {
         </GroundText>
 
         {contactPoints.map((point, i) => {
-          const x = (i - (contactPoints.length - 1) / 2) * SPACING
+          const x = CONTACT_COLUMNS[i]
           const isActive = activeIndex === i
 
           return (
-            <group key={point.id} position={[x, 0, -CONTENT_START]}>
+            <group key={point.id} position={[x, 0, -CONTACT_CONTENT_START]}>
               <Plinth index={i + 1} active={isActive} />
 
               <GroundText
@@ -183,7 +171,7 @@ export default function Contact() {
                   size={0.28}
                   anchorX="center"
                   opacity={0.7}
-                  maxWidth={SPACING * 1.6}
+                  maxWidth={CONTACT_SPACING * 1.6}
                 >
                   {point.handle}
                 </GroundText>

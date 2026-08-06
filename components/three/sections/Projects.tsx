@@ -4,6 +4,12 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { projects, wrap, type Project } from '../../../lib/content'
 import { usePublishInteraction } from '../../../lib/interact'
+import {
+  PROJECT_COLUMNS,
+  PROJECT_CONTENT_START,
+  PROJECT_SPACING,
+  PROJECT_STAND_OFFSET,
+} from '../../../lib/layout'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
@@ -27,16 +33,6 @@ import { useNearest } from '../useNearest'
  * placeholder rather than a borrowed screenshot.
  */
 
-const SPACING = 8.5
-/**
- * Clears the zone marker's footprint.
- *
- * Measured against an *open* board: its copy is painted on the ground in front
- * of it and runs some 8m back toward the camera, so a start that only cleared
- * the boards themselves left the active project's blurb lying across the zone
- * outline and under its floating label.
- */
-const CONTENT_START = 12.5
 const BOARD = { width: 4.2, height: 2.6, depth: 0.32 }
 
 /**
@@ -209,18 +205,14 @@ export default function Projects() {
   // opens as you pull up facing it instead of when you clip its base.
   const stands = useMemo(
     () =>
-      projects.map((_, i) =>
-        toWorld(
-          [zx, zz],
-          (i - (projects.length - 1) / 2) * SPACING,
-          -CONTENT_START + 3.5
-        )
+      PROJECT_COLUMNS.map((x) =>
+        toWorld([zx, zz], x, -PROJECT_CONTENT_START + PROJECT_STAND_OFFSET)
       ),
     [zx, zz]
   )
   // Overlapping radii; `useNearest` resolves to the closest board, so driving
   // along the row hands off from one to the next without a dead gap between.
-  const activeIndex = useNearest(stands, SPACING * 0.8)
+  const activeIndex = useNearest(stands, PROJECT_SPACING * 0.8)
 
   /**
    * A board is openable only if the project actually has somewhere to go.
@@ -253,13 +245,9 @@ export default function Projects() {
    */
   const obstacles = useMemo<Obstacle[]>(
     () =>
-      projects.map((_, i) => ({
+      PROJECT_COLUMNS.map((x) => ({
         kind: 'box',
-        position: toWorld(
-          [zx, zz],
-          (i - (projects.length - 1) / 2) * SPACING,
-          -CONTENT_START
-        ),
+        position: toWorld([zx, zz], x, -PROJECT_CONTENT_START),
         halfExtents: [BOARD.width * 0.5, BOARD.height * 0.55, BOARD.depth],
         y: BOARD.height * 0.5 + 0.35,
         yaw: WORLD_YAW,
@@ -277,11 +265,7 @@ export default function Projects() {
       {projects.map((project, i) => (
         <GroundShadow
           key={`${project.name}-shadow`}
-          position={toWorld(
-            [zx, zz],
-            (i - (projects.length - 1) / 2) * SPACING,
-            -CONTENT_START
-          )}
+          position={toWorld([zx, zz], PROJECT_COLUMNS[i], -PROJECT_CONTENT_START)}
           size={[BOARD.width * 1.5, BOARD.width * 1.1]}
           height={BOARD.height * 0.6}
           intensity={0.85}
@@ -291,11 +275,11 @@ export default function Projects() {
 
       <group position={[zx, 0, zz]} rotation={[0, WORLD_YAW, 0]}>
         {projects.map((project, i) => {
-          const x = (i - (projects.length - 1) / 2) * SPACING
+          const x = PROJECT_COLUMNS[i]
           const isActive = activeIndex === i
 
           return (
-            <group key={project.name} position={[x, 0, -CONTENT_START]}>
+            <group key={project.name} position={[x, 0, -PROJECT_CONTENT_START]}>
               <Board project={project} index={i + 2} active={isActive} />
 
               <GroundText

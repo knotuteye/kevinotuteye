@@ -72,18 +72,56 @@ const ZONE_REGIONS: KeepOut[] = ZONE_LIST.map((zone) => {
 
 /**
  * The name, which sticks out past the intro's region on the camera side — the
- * "FULL STACK · MUSIC" strapline sits at local z 5.2 and the region ends at 5.
+ * "FULL STACK ENGINEER" strapline sits at local z 5.2 and the region ends at 5.
  *
  * Kept as its own box rather than by widening the region because this one is
  * also what the signposts clear, and they must clear *the lettering*, not the
  * intro's territory. A sign for a zone is part of the intro; asking it to stand
  * outside the intro would push every arrow to the horizon.
  */
+const NAME_CENTRE_Z = 1.35
+const NAME_HALF_DEPTH = 5.4
+
 const INTRO_NAME: KeepOut = {
-  position: toWorld([0, 0], 0, 1.35),
-  halfExtents: [8.5, 5.4],
+  position: toWorld([0, 0], 0, NAME_CENTRE_Z),
+  halfExtents: [8.5, NAME_HALF_DEPTH],
   yaw: WORLD_YAW,
 }
+
+/**
+ * The ground between the camera and the name, which nothing may stand on
+ * either — for a different reason, and one a footprint test cannot see.
+ *
+ * The name is painted flat and the camera looks down at it from 32°, so a prop
+ * does not have to be *on* the lettering to cover it: a tree 3m in front of the
+ * strapline is squarely between the reader and the words. That is what happened
+ * — one 1.2-scale tree at local z 8.6, comfortably clear of every box here, and
+ * the line was unreadable from the one camera angle this site has.
+ *
+ * The reach is geometry, not taste. The default camera vector is 1.842 out for
+ * 1.15 up (`ANGLES` in `three/Camera`), so every metre of height hides 1.6m of
+ * the ground behind it, and the tallest thing `lib/scenery` places is a
+ * 1.5-scale tree at about 4.4m. Anything nearer than that reach could stand in
+ * front of the name; past it, nothing can.
+ *
+ * Separate from `INTRO_NAME` rather than folded into it because the signposts
+ * clear that box, and they *want* to stand in this band — an arrow on the
+ * ground occludes nothing, and pushing every sign 7m further out would empty
+ * the opening frame to fix a problem signs do not have.
+ */
+const OCCLUSION_PER_METRE = 1.602
+const TALLEST_PROP = 4.4
+
+const INTRO_SIGHTLINE: KeepOut = (() => {
+  const near = NAME_CENTRE_Z + NAME_HALF_DEPTH
+  const far = near + OCCLUSION_PER_METRE * TALLEST_PROP
+
+  return {
+    position: toWorld([0, 0], 0, (near + far) / 2),
+    halfExtents: [8.5, (far - near) / 2],
+    yaw: WORLD_YAW,
+  }
+})()
 
 /**
  * Where the car lands and the WASD keys sit.
@@ -184,6 +222,7 @@ export const SIGN_AREAS: KeepOut[] = SIGNPOSTS.map((sign) => ({
 export const SCENERY_KEEP_OUT: readonly KeepOut[] = [
   ...ZONE_REGIONS,
   INTRO_NAME,
+  INTRO_SIGHTLINE,
   SPAWN_APRON,
   ...SIGN_AREAS,
 ]
