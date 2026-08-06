@@ -95,5 +95,26 @@
       "language": "French",
       "proficiency": "Proficient"
     }
-  ]
+  ],
+  "contact": {
+    "email": "kevinotuteye@gmail.com",
+    "resume": "/kevin-otuteye.pdf",
+    "links": [
+      {
+        "label": "GITHUB",
+        "handle": "github.com/knotuteye",
+        "href": "https://www.github.com/knotuteye"
+      },
+      {
+        "label": "LINKEDIN",
+        "handle": "in/kevinotuteye",
+        "href": "https://www.linkedin.com/in/kevinotuteye/"
+      },
+      {
+        "label": "GITLAB",
+        "handle": "gitlab.com/kevinotuteye",
+        "href": "https://www.gitlab.com/kevinotuteye"
+      }
+    ]
+  }
 }

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import type { Spawn } from '../../lib/car'
+import { SCENERY } from '../../lib/scenery'
 import {
   INTRO_SPAWN,
   WORLD_YAW,
@@ -11,14 +12,18 @@ import {
 import Car from './Car'
 import WorldCamera from './Camera'
 import ControlKeys, { Clutter } from './Clutter'
+import CompassProbe from './CompassProbe'
+import Dust from './Dust'
 import Floor from './Floor'
 import Reveal from './Reveal'
 import Scatter from './Scatter'
 import { shadowAlpha } from './Shadow'
 import Signposts from './Signposts'
 import Tiles from './Tiles'
+import TireTracks from './TireTracks'
 import Zone from './Zone'
 import AboutSection from './sections/AboutSection'
+import Contact from './sections/Contact'
 import Intro, { IntroShadows } from './sections/Intro'
 import Projects from './sections/Projects'
 import Work from './sections/Work'
@@ -76,8 +81,15 @@ export default function World({ entry }: { entry: ZoneId }) {
       <Reveal shadowAlpha={shadowAlpha} />
 
       <Car spawn={spawn} />
+      {/* Under the car in the file as well as in the scene: both read the same
+          published car state, and neither writes anything the car reads back. */}
+      <TireTracks />
+      <Dust />
       <Tiles />
       <Signposts />
+      {/* Renders nothing — it projects the zones into screen space for the DOM
+          compass, and lives here because this is where the camera is. */}
+      <CompassProbe />
 
       <Intro />
       <IntroShadows />
@@ -85,6 +97,7 @@ export default function World({ entry }: { entry: ZoneId }) {
       <Work />
       <Projects />
       <AboutSection />
+      <Contact />
 
       {ZONE_LIST.filter((z) => z.id !== 'intro').map((zone) => (
         <Zone
@@ -95,50 +108,16 @@ export default function World({ entry }: { entry: ZoneId }) {
         />
       ))}
 
-      {/* Loose stuff, kept to the approaches rather than spread everywhere. A
-          field of knockable props by every marker would turn arriving at a
-          section into an obstacle course; near the intro and on the runs out to
-          each zone, it is the reason to take the long way round. */}
-      <Clutter center={[0, 4]} seed={101} count={14} innerRadius={7} radius={16} />
-      <Clutter center={[30, -8]} seed={102} count={10} innerRadius={6} radius={15} />
-      <Clutter center={[-32, -14]} seed={103} count={10} innerRadius={6} radius={15} />
-      <Clutter center={[0, -55]} seed={104} count={10} innerRadius={6} radius={15} />
-
-      {/* Denser than it was, and over more centres.
-          Forty-six props across a map a hundred metres deep left long stretches
-          of bare gradient, which is what made this read as a diagram of a place
-          rather than a place. The extra centres matter more than the extra
-          counts: four rings of scenery still leaves everything between them
-          empty, and the drive between markers is most of the time anyone
-          spends here. */}
-      <Scatter center={[0, 2]} seed={11} count={22} innerRadius={13} />
-      <Scatter
-        center={[34, -36]}
-        seed={22}
-        count={16}
-        radius={34}
-        innerRadius={20}
-      />
-      <Scatter
-        center={[-58, -26]}
-        seed={33}
-        count={16}
-        radius={34}
-        innerRadius={20}
-      />
-      <Scatter
-        center={[-2, -110]}
-        seed={44}
-        count={16}
-        radius={34}
-        innerRadius={20}
-      />
-
-      {/* The corridors between sections, which had nothing in them at all. */}
-      <Scatter center={[28, 6]} seed={55} count={12} radius={24} innerRadius={11} />
-      <Scatter center={[-30, -2]} seed={66} count={12} radius={24} innerRadius={11} />
-      <Scatter center={[8, -56]} seed={77} count={14} radius={26} innerRadius={12} />
-      <Scatter center={[-36, -74]} seed={88} count={12} radius={26} innerRadius={12} />
+      {/* Both fields are solved together in `lib/scenery` — where the props go
+          is a question about the whole plain (which ground the copy already
+          owns, what is standing there), and answering it one ring at a time is
+          what put boulders on the roles and trees inside each other. */}
+      {SCENERY.clutter.map((items, i) => (
+        <Clutter key={`clutter-${i}`} items={items} />
+      ))}
+      {SCENERY.scatter.map((items, i) => (
+        <Scatter key={`scatter-${i}`} items={items} />
+      ))}
     </>
   )
 }

@@ -2,7 +2,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import gsap from 'gsap'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { getCarState } from '../../lib/car'
+import { CAR, getCarState } from '../../lib/car'
+import { shake } from '../../lib/shake'
 import { getWorldState, WORLD_YAW, ZONES, type ZoneId } from '../../lib/world'
 
 /**
@@ -39,8 +40,33 @@ const ANGLES = {
  * One follow distance, not a per-zone one. A section-sized pull-back would be
  * right for reading a whole board at once and quite wrong for the thing the
  * camera is actually tracking, which is a two-metre car.
+ *
+ * It does move with speed, and that is the one exception worth making. A rig
+ * whose framing is identical at a standstill and at full boost gives the driver
+ * no feedback at all for the only continuous quantity they control — the engine
+ * pitch was carrying that on its own. Widening the lens and easing back does
+ * two things at once: the edges of frame start to move, which is where speed is
+ * actually read, and more of the world ahead comes into view exactly when the
+ * car is covering ground fast enough to need it.
+ *
+ * Both ends are deliberately narrow. This is a diorama, and a camera that
+ * lurches between two framings would break the stillness that makes it one.
  */
-const DISTANCE = 24
+const DISTANCE = { idle: 24, fast: 27.5 }
+const FOV = { idle: 40, fast: 47 }
+
+/** Speed the widening is measured against — the boosted top speed, so an
+ *  unboosted cruise sits partway up rather than pinned at the far end. */
+const TOP_SPEED = CAR.controlsAcceleratingMaxSpeedBoost
+
+/** Per-frame easing on the framing. Slower than the position follow: the rig
+ *  should breathe with the throttle, not snap to it. */
+const FRAMING_EASING = 0.045
+
+/** Metres the camera is thrown by a full-strength knock. */
+const SHAKE_AMPLITUDE = 0.55
+/** Knocks fall away in about a third of a second. */
+const SHAKE_DECAY = 7
 
 /** Low enough to feel attached to the car, high enough not to jitter with the
  *  suspension. Ground position only — following height would bob on every bump. */
@@ -53,6 +79,10 @@ export default function WorldCamera({ entry }: { entry: ZoneId }) {
   const targetEased = useRef(new THREE.Vector3())
   const angle = useRef(ANGLES.default.clone())
   const lastZone = useRef<ZoneId | null>(null)
+  /** 0 at a standstill, 1 at the boosted top speed, eased. */
+  const pace = useRef(0)
+  const offset = useRef(new THREE.Vector3())
+  const elapsed = useRef(0)
 
   const entryZone = useMemo(() => ZONES[entry], [entry])
 
@@ -71,11 +101,15 @@ export default function WorldCamera({ entry }: { entry: ZoneId }) {
     lastZone.current = entryZone.id === 'intro' ? null : entryZone.id
     camera.position
       .copy(targetEased.current)
-      .add(angle.current.clone().multiplyScalar(DISTANCE))
+      .add(angle.current.clone().multiplyScalar(DISTANCE.idle))
+    camera.fov = FOV.idle
+    camera.updateProjectionMatrix()
     camera.lookAt(targetEased.current)
   }, [camera, entryZone])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    elapsed.current += delta
+
     const car = getCarState()
     if (car.ready) {
       target.current.set(car.x, 0, car.z)
@@ -97,10 +131,47 @@ export default function WorldCamera({ entry }: { entry: ZoneId }) {
 
     targetEased.current.lerp(target.current, EASING)
 
+    // Eased rather than read straight off the car: `speed` is recomputed from a
+    // position delta every step and jitters over bumps, and a lens that tracked
+    // it exactly would pump on every kerb.
+    const wanted = car.ready ? Math.min(1, Math.abs(car.speed) / TOP_SPEED) : 0
+    pace.current += (wanted - pace.current) * FRAMING_EASING
+
+    const distance = DISTANCE.idle + (DISTANCE.fast - DISTANCE.idle) * pace.current
+    const fov = FOV.idle + (FOV.fast - FOV.idle) * pace.current
+
+    if (Math.abs(camera.fov - fov) > 0.001) {
+      camera.fov = fov
+      camera.updateProjectionMatrix()
+    }
+
     camera.position
       .copy(targetEased.current)
-      .add(angle.current.clone().normalize().multiplyScalar(DISTANCE))
+      .add(angle.current.clone().normalize().multiplyScalar(distance))
     camera.lookAt(targetEased.current)
+
+    /**
+     * The knock, applied after `lookAt` and to the position only.
+     *
+     * Rotating the camera would swing the whole world about the centre of frame
+     * and read as the car being spun; translating a rig whose orientation has
+     * already been fixed reads as the camera itself being jolted, which is what
+     * happened. Three incommensurate frequencies so a run of hits in quick
+     * succession never lands on the same wobble twice.
+     */
+    if (shake.value > 0.002) {
+      const t = elapsed.current
+      const amount = shake.value * SHAKE_AMPLITUDE
+      offset.current.set(
+        Math.sin(t * 57.3),
+        Math.sin(t * 71.9),
+        Math.cos(t * 63.1)
+      )
+      camera.position.addScaledVector(offset.current, amount)
+      shake.value *= Math.exp(-delta * SHAKE_DECAY)
+    } else {
+      shake.value = 0
+    }
   })
 
   return null

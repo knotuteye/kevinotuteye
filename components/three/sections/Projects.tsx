@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { projects, wrap, type Project } from '../../../lib/content'
+import { usePublishInteraction } from '../../../lib/interact'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
@@ -37,6 +38,17 @@ const SPACING = 8.5
  */
 const CONTENT_START = 12.5
 const BOARD = { width: 4.2, height: 2.6, depth: 0.32 }
+
+/**
+ * How wide a board's copy may run, given the 8.5m pitch it is centred on.
+ *
+ * The row is read across, so every line of it is level with the same line on
+ * the boards either side — two of them, since the copy is centred. Nothing
+ * bounded the stack list, and at six entries it reached 14.3m: wider than the
+ * pitch, so it printed itself over both neighbours. 7.4m leaves a metre of
+ * clear ground between adjacent columns of copy at every height.
+ */
+const COPY_WIDTH = 7.4
 
 /** Inset from the slab's edge, so the board reads as a frame around the face. */
 const FACE = { width: BOARD.width - 0.34, height: BOARD.height - 0.34 }
@@ -211,6 +223,25 @@ export default function Projects() {
   const activeIndex = useNearest(stands, SPACING * 0.8)
 
   /**
+   * A board is openable only if the project actually has somewhere to go.
+   *
+   * Several do not — the university work has no public URL — and the prompt
+   * staying dark for those is the honest outcome. Offering "press E" and then
+   * opening nothing would teach a visitor that the verb is unreliable, which
+   * costs more than the two boards it would appear on.
+   */
+  const activeProject = activeIndex === null ? null : projects[activeIndex]
+  usePublishInteraction(
+    'projects',
+    activeProject?.link
+      ? {
+          label: `open ${activeProject.name.split(',')[0].toLowerCase()}`,
+          href: activeProject.link,
+        }
+      : null
+  )
+
+  /**
    * The boards are solid, which is what the row's spacing was always for: 8.5m
    * apart and 4.2m wide leaves a 4.3m gap between each pair, so the row reads
    * as a run of hoardings you drive along and can still cut through, rather
@@ -271,9 +302,9 @@ export default function Projects() {
                 position={[0, 3.1]}
                 size={0.5}
                 anchorX="center"
-                maxWidth={8}
+                maxWidth={COPY_WIDTH}
               >
-                {wrap(project.name.split(',')[0], 26, 2)}
+                {wrap(project.name.split(',')[0], 22, 2)}
               </GroundText>
 
               {isActive ? (
@@ -283,18 +314,18 @@ export default function Projects() {
                     size={0.3}
                     anchorX="center"
                     opacity={0.85}
-                    maxWidth={8.5}
+                    maxWidth={COPY_WIDTH}
                   >
-                    {wrap(project.about, 42, 4)}
+                    {wrap(project.about, 38, 4)}
                   </GroundText>
                   <GroundText
                     position={[0, 7.4]}
                     size={0.26}
                     anchorX="center"
                     opacity={0.6}
-                    maxWidth={8.5}
+                    maxWidth={COPY_WIDTH}
                   >
-                    {project.technologies.slice(0, 6).join('  ·  ')}
+                    {project.technologies.slice(0, 5).join('  ·  ')}
                   </GroundText>
                 </>
               ) : null}

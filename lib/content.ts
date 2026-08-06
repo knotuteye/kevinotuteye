@@ -46,6 +46,71 @@ export const experience = experienceJson.experience as Role[]
 export const projects = projectsJson.projects as Project[]
 export const about = aboutJson
 
+/* ------------------------------------------------------------------ */
+/* Contact                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One way of reaching Kevin, flattened into the shape both layers render.
+ *
+ * `handle` and `href` are separate because they are different claims: the href
+ * has to be correct and the handle has to be *readable* on a plinth from six
+ * metres away, and "https://www.linkedin.com/in/kevinotuteye/" is neither short
+ * nor informative. Nothing derives one from the other, because every attempt to
+ * do so is a regex that gets a URL wrong eventually.
+ */
+export type ContactPoint = {
+  id: string
+  /** Short all-caps name for the plinth and the prompt — "EMAIL", "GITHUB". */
+  label: string
+  /** What is shown under it. */
+  handle: string
+  href: string
+}
+
+/**
+ * Built rather than declared so that a missing entry removes a plinth instead
+ * of leaving one pointing at nothing.
+ *
+ * The résumé is the case that matters: linking a PDF that is not in `public`
+ * yet is a 404 on the one page a recruiter is most likely to open, so the
+ * plinth exists only while `contact.resume` is set. Clearing that key in the
+ * JSON is the whole of the fix, and the row closes up on its own.
+ */
+export const contactPoints: ContactPoint[] = (() => {
+  const contact = about.contact
+  const points: ContactPoint[] = []
+
+  if (contact?.email) {
+    points.push({
+      id: 'email',
+      label: 'EMAIL',
+      handle: contact.email,
+      href: `mailto:${contact.email}`,
+    })
+  }
+
+  for (const link of contact?.links ?? []) {
+    points.push({
+      id: link.label.toLowerCase(),
+      label: link.label,
+      handle: link.handle,
+      href: link.href,
+    })
+  }
+
+  if (contact?.resume) {
+    points.push({
+      id: 'resume',
+      label: 'RÉSUMÉ',
+      handle: 'PDF',
+      href: contact.resume,
+    })
+  }
+
+  return points
+})()
+
 /** Splits a "COMPANY, CITY, ST" string into its parts for display. */
 export function splitCompany(company: string): {
   name: string

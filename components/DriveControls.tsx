@@ -8,15 +8,24 @@ import {
   requestEvent,
   type TouchAction,
 } from '../lib/controls'
+import { openInteraction, useInteraction } from '../lib/interact'
+import { useTouring } from '../lib/tour'
+import Compass from './Compass'
 
 /**
- * The world's only chrome: what the keys are, the sound toggle, and — on touch
- * — the joystick.
+ * The world's only chrome: what the keys are, where everything is, what the
+ * thing you are parked at will do, and — on touch — the joystick.
  *
  * A driving control scheme is only obvious to someone who already knows they
  * are driving. The hint sits over the canvas until you actually move, then
  * fades and stays gone; the stick is permanent on touch, where there is no
  * other way in at all.
+ *
+ * Everything added here since is a different kind of thing to the hint, and the
+ * distinction is worth keeping: the hint teaches the controls once, whereas the
+ * compass and the prompt are live readouts of where you are and what is within
+ * reach. Those never fade, because the question they answer never stops being
+ * asked.
  */
 
 /** Touch detection is a client fact, so it is read through a store rather than
@@ -160,6 +169,79 @@ function ResetButton() {
   )
 }
 
+/**
+ * For everyone who is not going to drive.
+ *
+ * The reasoning is in `lib/tour`. What matters here is that it is a button and
+ * not a default: it is offered, once, in the same row as the other two, and a
+ * visitor who ignores it never sees the site behave on its own.
+ */
+function TourButton() {
+  const touring = useTouring()
+
+  return (
+    <button
+      type="button"
+      onClick={() => requestEvent('tour')}
+      aria-pressed={touring}
+      aria-label={touring ? 'Stop the tour' : 'Drive the tour for me'}
+      className={CHROME_BUTTON}
+    >
+      {touring ? 'Stop tour' : 'Tour'}
+    </button>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Interaction                                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Names whatever the car is parked at, and on touch is the way to fire it.
+ *
+ * The prompt is the entire discoverability story for the interaction verb —
+ * there is no menu it could live in and no cursor to hover — so it says the
+ * whole sentence rather than showing a key and trusting the reader to guess:
+ * "press E to open kronos", not "E".
+ *
+ * On touch it becomes the button itself. A phone has no E, and adding a fifth
+ * circle to the thumb cluster for something that is only occasionally live
+ * would leave a dead control on screen most of the time.
+ */
+function InteractPrompt({ touch }: { touch: boolean }) {
+  const interaction = useInteraction()
+  if (!interaction) return null
+
+  const position = touch
+    ? 'absolute inset-x-0 bottom-52 flex justify-center px-6'
+    : 'absolute inset-x-0 bottom-8 flex justify-center px-6'
+
+  if (touch) {
+    return (
+      <div className={position}>
+        <button
+          type="button"
+          onClick={openInteraction}
+          className="pointer-events-auto max-w-full truncate rounded-full bg-white px-6 py-3 font-heading text-xs uppercase tracking-[0.2em] text-orangeRed shadow-lg"
+        >
+          {interaction.label}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className={position}>
+      <p className="max-w-full truncate rounded-full bg-black/30 px-5 py-2 font-heading text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+        <span className="mr-2 rounded border border-white/50 px-1.5 py-0.5 text-[0.65rem]">
+          E
+        </span>
+        {interaction.label}
+      </p>
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------------ */
 /* Chrome                                                              */
 /* ------------------------------------------------------------------ */
@@ -179,48 +261,55 @@ export default function DriveControls() {
   }, [moved])
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-20">
-      {/* Below the buttons on a phone, beside them on anything wider: a
-          centred pill and a right-hand pair collide on a 390px screen. */}
-      <div
-        className={`absolute inset-x-0 top-20 flex justify-center px-4 transition-opacity duration-700 sm:top-6 ${
-          moved ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
-        <p className="rounded-full bg-black/25 px-5 py-2 text-center font-heading text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm">
-          {touch
-            ? 'Push the stick to drive'
-            : 'W A S D or arrows to drive · shift to boost · space to brake · H horn · R reset · M mute'}
-        </p>
+    <>
+      <Compass />
+
+      <div className="pointer-events-none fixed inset-0 z-20">
+        {/* Below the buttons on a phone, beside them on anything wider: a
+            centred pill and a right-hand pair collide on a 390px screen. */}
+        <div
+          className={`absolute inset-x-0 top-20 flex justify-center px-4 transition-opacity duration-700 sm:top-6 ${
+            moved ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <p className="rounded-full bg-black/25 px-5 py-2 text-center font-heading text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+            {touch
+              ? 'Push the stick to drive · tap a prompt to open it'
+              : 'W A S D or arrows to drive · shift to boost · space to brake · E open · T tour · H horn · R reset · M mute'}
+          </p>
+        </div>
+
+        <div className="absolute right-6 top-6 flex gap-2">
+          <TourButton />
+          <ResetButton />
+          <SoundButton />
+        </div>
+
+        <InteractPrompt touch={touch} />
+
+        {touch ? (
+          <>
+            <div className="absolute bottom-10 left-8">
+              <Joystick />
+            </div>
+
+            {/* Reverse and brake stay as buttons: they are momentary states, not
+                directions, and the stick has no way to say either. */}
+            <div className="absolute bottom-10 right-8 flex flex-col items-end gap-3">
+              <button
+                type="button"
+                onClick={playHorn}
+                aria-label="Horn"
+                className="pointer-events-auto h-16 w-16 touch-none select-none rounded-full border-2 border-white/70 bg-white/10 font-heading text-[0.6rem] uppercase tracking-widest text-white"
+              >
+                Horn
+              </button>
+              <TouchButton action="down" label="Rev" title="Reverse" />
+              <TouchButton action="brake" label="Brake" title="Brake" />
+            </div>
+          </>
+        ) : null}
       </div>
-
-      <div className="absolute right-6 top-6 flex gap-2">
-        <ResetButton />
-        <SoundButton />
-      </div>
-
-      {touch ? (
-        <>
-          <div className="absolute bottom-10 left-8">
-            <Joystick />
-          </div>
-
-          {/* Reverse and brake stay as buttons: they are momentary states, not
-              directions, and the stick has no way to say either. */}
-          <div className="absolute bottom-10 right-8 flex flex-col items-end gap-3">
-            <button
-              type="button"
-              onClick={playHorn}
-              aria-label="Horn"
-              className="pointer-events-auto h-16 w-16 touch-none select-none rounded-full border-2 border-white/70 bg-white/10 font-heading text-[0.6rem] uppercase tracking-widest text-white"
-            >
-              Horn
-            </button>
-            <TouchButton action="down" label="Rev" title="Reverse" />
-            <TouchButton action="brake" label="Brake" title="Brake" />
-          </div>
-        </>
-      ) : null}
-    </div>
+    </>
   )
 }

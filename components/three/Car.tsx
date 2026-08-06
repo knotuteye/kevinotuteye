@@ -5,8 +5,11 @@ import * as THREE from 'three'
 import { playHorn, playImpact, toggleMuted, updateEngine } from '../../lib/audio'
 import { CarPhysics, toThreeGround, type Spawn } from '../../lib/car'
 import { actions, bindControls, joystick } from '../../lib/controls'
+import { openInteraction } from '../../lib/interact'
 import { makeMatcap } from '../../lib/matcap'
 import { palette, world } from '../../lib/palette'
+import { addShake } from '../../lib/shake'
+import { stopTour, toggleTour, updateTour } from '../../lib/tour'
 import { createClayMaterial, createPureMaterial } from './materials/clay'
 import { createShadowMaterial, shadowAlpha, shadowOffsetFor } from './Shadow'
 
@@ -189,7 +192,13 @@ export default function Car({ spawn }: { spawn: Spawn }) {
 
   useEffect(() => {
     physics.attach()
-    physics.onImpact = playImpact
+    // One measurement, two outputs. The knock already chose an audio sample by
+    // force; the same number now also decides how hard the camera is thrown, so
+    // what you hear and what you feel can never disagree about a collision.
+    physics.onImpact = (strength) => {
+      playImpact(strength)
+      addShake(strength)
+    }
     return () => {
       physics.onImpact = null
       physics.dispose()
@@ -199,9 +208,15 @@ export default function Car({ spawn }: { spawn: Spawn }) {
   useEffect(
     () =>
       bindControls((event) => {
-        if (event === 'reset') physics.reset()
-        else if (event === 'horn') playHorn()
+        if (event === 'reset') {
+          // A respawn mid-tour would leave the autopilot steering toward a
+          // waypoint from the wrong end of the map.
+          stopTour()
+          physics.reset()
+        } else if (event === 'horn') playHorn()
         else if (event === 'sound') toggleMuted()
+        else if (event === 'open') openInteraction()
+        else if (event === 'tour') toggleTour()
       }),
     [physics]
   )
@@ -233,6 +248,11 @@ export default function Car({ spawn }: { spawn: Spawn }) {
   )
 
   useFrame((_, delta) => {
+    // Before the step, because it writes the same `actions` and `joystick` the
+    // step is about to read — the autopilot is a driver, not a second physics
+    // path, and this is the frame in which it takes the wheel.
+    updateTour(delta)
+
     physics.step(delta, actions, joystick)
     updateEngine(physics.speed, physics.accelerating !== 0)
 

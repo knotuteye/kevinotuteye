@@ -1,17 +1,21 @@
 import { useMemo } from 'react'
 import { useObstacles, type Obstacle } from '../../lib/obstacles'
-import { mulberry32, range } from '../../lib/rng'
+import type { ScatterItem } from '../../lib/scenery'
 import { useClayMaterial } from './Clay'
 import Prop from './Prop'
 import GroundShadow from './Shadow'
 
 /**
- * Boulders and lollipop trees scattered around a point.
+ * Boulders and lollipop trees, drawn where `lib/scenery` decided they stand.
  *
  * Deliberately built from primitives: chunky, matte, no texture detail. The
  * matcap does all the shading work, so a sphere and a cylinder are enough to
- * read as clay props. Placement is seeded so the world looks hand-arranged and
- * stays put between reloads.
+ * read as clay props.
+ *
+ * Placement is not this component's business. It was, and a ring that knows
+ * only its own hole cannot see the copy painted across it or the other rings it
+ * crosses — so the field is solved as one problem, once, and this draws the
+ * answer.
  *
  * They are also solid. A tree you can drive through is scenery painted on a
  * backdrop; one you cannot is a thing in the same world as the car, and the
@@ -25,22 +29,7 @@ import GroundShadow from './Shadow'
  * outcome, and hold everywhere else.
  */
 
-type Props = {
-  center: [number, number]
-  radius?: number
-  count?: number
-  seed?: number
-  /** Keeps props from landing on top of the content in the middle. */
-  innerRadius?: number
-}
-
-export default function Scatter({
-  center,
-  radius = 26,
-  count = 14,
-  seed = 1,
-  innerRadius = 10,
-}: Props) {
+export default function Scatter({ items }: { items: ScatterItem[] }) {
   /**
    * Three stones, three canopies, two barks.
    *
@@ -64,35 +53,6 @@ export default function Scatter({
   )
   const leaves = useMemo(() => [leafA, leafB, leafC], [leafA, leafB, leafC])
   const barks = useMemo(() => [barkA, barkB], [barkA, barkB])
-
-  const items = useMemo(() => {
-    const rand = mulberry32(seed)
-    const out: {
-      kind: 'rock' | 'tree'
-      x: number
-      z: number
-      scale: number
-      rotation: number
-      /** Which material variant, and for trees which silhouette. */
-      variant: number
-      shape: number
-    }[] = []
-
-    for (let i = 0; i < count; i++) {
-      const angle = rand() * Math.PI * 2
-      const dist = range(rand, innerRadius, radius)
-      out.push({
-        kind: rand() > 0.55 ? 'tree' : 'rock',
-        x: center[0] + Math.cos(angle) * dist,
-        z: center[1] + Math.sin(angle) * dist,
-        scale: range(rand, 0.6, 1.5),
-        rotation: rand() * Math.PI * 2,
-        variant: Math.floor(rand() * 3),
-        shape: Math.floor(rand() * 3),
-      })
-    }
-    return out
-  }, [center, radius, count, seed, innerRadius])
 
   /**
    * Colliders, sized a little under the meshes rather than around them.

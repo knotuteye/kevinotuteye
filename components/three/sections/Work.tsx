@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { experience, splitCompany, wrap } from '../../../lib/content'
+import { usePublishInteraction } from '../../../lib/interact'
 import { useObstacles, type Obstacle } from '../../../lib/obstacles'
 import { toWorld, WORLD_YAW, ZONES } from '../../../lib/world'
 import { useClayMaterial } from '../Clay'
@@ -20,7 +21,26 @@ import { useNearest } from '../useNearest'
  * is read by driving down it rather than by clicking along it.
  */
 
-const ROW_SPACING = 7.5
+/**
+ * Row pitch, set by the tallest thing a row can become rather than by how a
+ * closed one looks.
+ *
+ * An open row is 9.4m of copy: a heading, three lines of preamble and three
+ * projects with their stacks under them. At 7.5m the last stack ran 0.8m past
+ * the pitch and printed itself across the *next* role's company name — and
+ * because only the near row opens, the collision only appeared once you drove
+ * up to read something, which is the one moment it must not.
+ */
+const ROW_SPACING = 10
+/** Pitch of the project entries inside an open row — a name and its stack. */
+const PROJECT_SPACING = 1.5
+/**
+ * A stack list is one long line of tool names and nothing bounded it, so the
+ * worst of them ran 17m from a column 15m wide — out past the copy, past the
+ * marker, and into the ground the scenery is placed on. Two lines here is
+ * fine; PROJECT_SPACING is set to absorb the second.
+ */
+const STACK_WIDTH = 13.5
 const MARKER_HEIGHT = 0.9
 /**
  * Clears the zone marker's footprint so rows never sit under it.
@@ -77,6 +97,23 @@ export default function Work() {
     [zx, zz]
   )
   const activeIndex = useNearest(rows, ROW_SPACING * 0.8)
+
+  /**
+   * A role opens the first of its projects that shipped somewhere public.
+   *
+   * A role has no URL of its own — the company might, but a link to a former
+   * employer's homepage is not evidence of anything — so the target is the work
+   * itself. Nine of these exist across the eight roles and they are the only
+   * proof in this section that any of it went live.
+   */
+  const activeRole = activeIndex === null ? null : experience[activeIndex]
+  const activeLink = activeRole?.projects.find((project) => project.link)
+  usePublishInteraction(
+    'work',
+    activeLink
+      ? { label: `open ${activeLink.name.toLowerCase()}`, href: activeLink.link }
+      : null
+  )
 
   // The markers stand at the edge of the column, well off the lane the car
   // drives down, so making them solid costs the reader nothing and gives the
@@ -151,18 +188,19 @@ export default function Work() {
                   {role.projects.slice(0, 3).map((project, p) => (
                     <group key={project.name}>
                       <GroundText
-                        position={[-7.4, 4.1 + p * 1.15]}
+                        position={[-7.4, 4.1 + p * PROJECT_SPACING]}
                         size={0.36}
                         opacity={0.95}
                       >
                         {`› ${project.name}`}
                       </GroundText>
                       <GroundText
-                        position={[-7.0, 4.68 + p * 1.15]}
+                        position={[-7.0, 4.68 + p * PROJECT_SPACING]}
                         size={0.26}
                         opacity={0.62}
+                        maxWidth={STACK_WIDTH}
                       >
-                        {project.technologies.slice(0, 8).join('  ·  ')}
+                        {project.technologies.slice(0, 6).join('  ·  ')}
                       </GroundText>
                     </group>
                   ))}

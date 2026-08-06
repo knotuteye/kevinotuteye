@@ -166,11 +166,42 @@ export type CarState = {
   y: number
   /** Metres per millisecond, per the note at the top of this file. */
   speed: number
+  /**
+   * Which way the nose points, on the ground, in three's frame — unit length.
+   *
+   * Published rather than left for callers to derive from `angle`, because
+   * `angle` is in the *simulation's* frame and every consumer of this is not:
+   * the tyre marks stamp quads behind the rear axle, the dust spawns at the
+   * wheels, and both are three-space positions. Converting at four call sites
+   * is how one of them silently ends up mirrored.
+   */
+  dirX: number
+  dirZ: number
+  /** True while the chassis is low enough to be riding on its wheels. */
+  grounded: boolean
   /** False until the first physics step has run. */
   ready: boolean
 }
 
-const carState: CarState = { x: 0, z: 0, y: 0, speed: 0, ready: false }
+const carState: CarState = {
+  x: 0,
+  z: 0,
+  y: 0,
+  speed: 0,
+  dirX: 0,
+  dirZ: -1,
+  grounded: false,
+  ready: false,
+}
+
+/**
+ * Chassis height above which the car counts as airborne.
+ *
+ * It rests at roughly 0.35 on its suspension, so this is loose enough to
+ * survive a kerb and tight enough that a jump stops laying tyre marks in
+ * mid-air.
+ */
+const GROUNDED_BELOW = 0.75
 
 export function getCarState(): CarState {
   return carState
@@ -613,6 +644,18 @@ export class CarPhysics {
     carState.z = z
     carState.y = this.chassisBody.position.z
     carState.speed = this.speed
+
+    // Flattened onto the ground plane and renormalised: the raw forward vector
+    // tips with the chassis, and a nose-down car would otherwise lay its tyre
+    // marks short of where its wheels are.
+    const [fx, fz] = toThreeGround(this.worldForward.x, this.worldForward.y)
+    const flat = Math.hypot(fx, fz)
+    if (flat > 1e-6) {
+      carState.dirX = fx / flat
+      carState.dirZ = fz / flat
+    }
+
+    carState.grounded = this.chassisBody.position.z < GROUNDED_BELOW
     carState.ready = true
   }
 

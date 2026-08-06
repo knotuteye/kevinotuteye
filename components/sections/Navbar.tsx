@@ -3,35 +3,42 @@ import { useState } from 'react'
 import Button from '../elements/Button'
 import Masthead from '../elements/Masthead'
 import MobileMenu from './MobileMenu'
-import ContactForm from './ContactForm'
 
+/**
+ * The nav for the DOM layer.
+ *
+ * Two entries changed for the same reason: this nav is also the site map, and
+ * every item in it was making a promise the site could not keep.
+ *
+ * "Blog" pointed at a page that is a heading and nothing else — and, unlike
+ * every other route, one with no zone in the world, so following it from inside
+ * the canvas unmounted the car to arrive at an empty page. The route still
+ * exists; it is simply not advertised until there is something behind it.
+ *
+ * "Say Hi" opened a modal whose send button closed the modal. A form that
+ * silently discards what you typed is worse than no form, so it is now a link
+ * to /contact, which is a real page and a real place in the world.
+ */
 export default function Navbar() {
-  const [showContactForm, setShowContactForm] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const router = useRouter()
   const navButtons = [
     {
       text: 'About',
       onClick: () => {
-        router.push('about')
-      },
-    },
-    {
-      text: 'Blog',
-      onClick: () => {
-        router.push('blog')
+        router.push('/about')
       },
     },
     {
       text: 'Work',
       onClick: () => {
-        router.push('work')
+        router.push('/work')
       },
     },
     {
       text: 'Projects',
       onClick: () => {
-        router.push('projects')
+        router.push('/projects')
       },
     },
     {
@@ -39,7 +46,7 @@ export default function Navbar() {
       svgPath:
         'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4',
       onClick: () => {
-        setShowContactForm(true)
+        router.push('/contact')
       },
       alt: true,
     },
@@ -79,10 +86,6 @@ export default function Navbar() {
           </svg>
         </div>
       </div>
-      <ContactForm
-        show={showContactForm}
-        setShow={setShowContactForm}
-      ></ContactForm>
       <MobileMenu
         buttons={navButtons}
         show={showMobileMenu}

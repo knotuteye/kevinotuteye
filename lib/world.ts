@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react'
  * navigation means moving the camera between them. Coordinates are [x, z] on
  * the ground; three is Y-up, so y is height and z runs away from the viewer.
  */
-export type ZoneId = 'intro' | 'work' | 'projects' | 'about'
+export type ZoneId = 'intro' | 'work' | 'projects' | 'about' | 'contact'
 
 /**
  * The camera sits off-axis, so anything lying flat on the ground has to be
@@ -119,9 +119,13 @@ export const ZONES: Record<ZoneId, Zone> = {
     route: '/work',
     position: [55, -10],
     halfExtents: [6, 3.5],
-    // Eight roles at 7.5m spacing, plus the run-up to the first one — which is
+    // Eight roles at 10m spacing, plus the run-up to the first one — which is
     // long, because an open role's copy runs back toward the marker.
-    region: { halfWidth: 16, depth: 74 },
+    //
+    // This has to cover the *last* role's heading, not the last row anchor: the
+    // region is what keeps scenery off the copy, and a boulder placed 2m behind
+    // the final company name is on it.
+    region: { halfWidth: 16, depth: 86 },
   },
   projects: {
     id: 'projects',
@@ -139,6 +143,29 @@ export const ZONES: Record<ZoneId, Zone> = {
     position: [2, -98],
     halfExtents: [6, 3.5],
     region: { halfWidth: 30, depth: 40 },
+  },
+  /**
+   * The only zone that is deliberately *near*.
+   *
+   * Every other section is out on the plain because its content needs the room,
+   * and finding them is the drive. Contact is the one place a visitor may want
+   * before they have toured anything — it is the thing the rest of the site is
+   * an argument for — so it sits about 39m off the spawn, on the camera's side
+   * of the name, and its signpost is in the opening frame.
+   *
+   * Placed at +z rather than out with the others for the same reason. The three
+   * content zones fan away from the viewer; putting the call to action behind
+   * the car means it never competes with them for the same bearing, and a
+   * visitor who wants only this never has to drive past eight roles to find it.
+   */
+  contact: {
+    id: 'contact',
+    label: 'CONTACT',
+    route: '/contact',
+    position: [-36, 26],
+    halfExtents: [6, 3.5],
+    // Shallow and narrow: a short row of plinths, not a column of copy.
+    region: { halfWidth: 14, depth: 24 },
   },
 }
 

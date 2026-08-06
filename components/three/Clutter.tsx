@@ -1,7 +1,7 @@
 import { Text } from '@react-three/drei'
 import { useMemo } from 'react'
 import { useObstacles, type Obstacle } from '../../lib/obstacles'
-import { mulberry32, range } from '../../lib/rng'
+import type { ClutterItem } from '../../lib/scenery'
 import { INTRO_SPAWN, toWorld, WORLD_YAW } from '../../lib/world'
 import { useClayMaterial } from './Clay'
 import Prop from './Prop'
@@ -112,75 +112,50 @@ function ControlKeys() {
 /* Scattered clutter                                                   */
 /* ------------------------------------------------------------------ */
 
-type ClutterProps = {
-  center: [number, number]
-  seed?: number
-  count?: number
-  radius?: number
-  innerRadius?: number
-}
-
 /**
- * Crates and cones strewn around a point.
+ * Crates and cones, drawn where `lib/scenery` decided they lie.
  *
  * Two shapes rather than one because they fail differently and that reads as
  * variety: a crate shunts and tumbles end over end, a cone tips and rolls in an
  * arc. Both are light. Nothing here is worth more than a second of anyone's
  * attention individually — the point is the field of them.
  */
-export function Clutter({
-  center,
-  seed = 1,
-  count = 12,
-  radius = 18,
-  innerRadius = 7,
-}: ClutterProps) {
+export function Clutter({ items }: { items: ClutterItem[] }) {
   const crateMaterial = useClayMaterial({ color: 'maizeCrayola' })
   const coneMaterial = useClayMaterial({ color: 'redSalsa' })
 
-  const items = useMemo(() => {
-    const rand = mulberry32(seed)
-    return Array.from({ length: count }, () => {
-      const angle = rand() * Math.PI * 2
-      const dist = range(rand, innerRadius, radius)
-      const scale = range(rand, 0.7, 1.15)
-      const kind = rand() > 0.45 ? 'crate' : ('cone' as const)
-      const x = center[0] + Math.cos(angle) * dist
-      const z = center[1] + Math.sin(angle) * dist
-
-      const size = 0.55 * scale
-      const obstacle: Obstacle =
-        kind === 'crate'
+  const obstacles = useMemo<Obstacle[]>(
+    () =>
+      items.map((item) =>
+        item.kind === 'crate'
           ? {
               kind: 'box',
-              position: [x, z],
-              halfExtents: [size / 2, size / 2, size / 2],
-              y: size / 2,
-              yaw: rand() * Math.PI * 2,
-              mass: 2.2 * scale,
+              position: [item.x, item.z],
+              halfExtents: [item.size / 2, item.size / 2, item.size / 2],
+              y: item.size / 2,
+              yaw: item.rotation,
+              mass: 2.2 * item.scale,
             }
           : {
               kind: 'cylinder',
-              position: [x, z],
-              radius: size * 0.42,
-              height: size * 1.5,
-              y: size * 0.75,
-              yaw: rand() * Math.PI * 2,
-              mass: 1.8 * scale,
+              position: [item.x, item.z],
+              radius: item.size * 0.42,
+              height: item.size * 1.5,
+              y: item.size * 0.75,
+              yaw: item.rotation,
+              mass: 1.8 * item.scale,
             }
-
-      return { kind, scale, size, obstacle }
-    })
-  }, [center, seed, count, radius, innerRadius])
-
-  useObstacles(useMemo(() => items.map((i) => i.obstacle), [items]))
+      ),
+    [items]
+  )
+  useObstacles(obstacles)
 
   return (
     <>
       {items.map((item, i) => (
         <Prop
           key={i}
-          obstacle={item.obstacle}
+          obstacle={obstacles[i]}
           shadow={[item.size * 2, item.size * 2]}
           shadowIntensity={0.7}
         >

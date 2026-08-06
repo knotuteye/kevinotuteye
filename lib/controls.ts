@@ -35,7 +35,23 @@ export function isDriving(): boolean {
   )
 }
 
-export type ControlEvent = 'reset' | 'horn' | 'sound'
+/**
+ * Counts inputs that came from a *person*.
+ *
+ * `isDriving` cannot answer that question, and the tour is why: it drives by
+ * writing `actions` and `joystick` directly, so from that function's point of
+ * view a tour in progress is indistinguishable from a driver holding W. The
+ * tour has to yield the moment someone touches the controls, so it watches this
+ * instead — bumped only by the handlers below, which are the only paths a real
+ * key press or thumb can take.
+ */
+let inputEpoch = 0
+
+export function getInputEpoch(): number {
+  return inputEpoch
+}
+
+export type ControlEvent = 'reset' | 'horn' | 'sound' | 'open' | 'tour'
 
 const eventListeners = new Set<(event: ControlEvent) => void>()
 
@@ -100,9 +116,21 @@ export function bindControls(onEvent: (event: ControlEvent) => void): () => void
       case 'KeyM':
         if (!event.repeat) emit('sound')
         break
+      // The interaction verb. E rather than Enter or Space: both of those are
+      // already spoken for — Space is the brake, and Enter is what a keyboard
+      // user presses to activate the focused element of the DOM layer behind
+      // the canvas.
+      case 'KeyE':
+        if (!event.repeat) emit('open')
+        break
+      case 'KeyT':
+        if (!event.repeat) emit('tour')
+        break
       default:
         return
     }
+
+    inputEpoch++
 
     // The canvas is a fixed viewport with a hidden DOM layer behind it, so the
     // arrow keys and space would otherwise scroll that layer under the world.
@@ -182,6 +210,7 @@ export function bindTouchButton(
     event.preventDefault()
     element.setPointerCapture(event.pointerId)
     actions[action] = true
+    inputEpoch++
   }
 
   const release = (event: PointerEvent) => {
@@ -288,6 +317,7 @@ export function bindJoystick(
   const press = (event: PointerEvent) => {
     event.preventDefault()
     pointerId = event.pointerId
+    inputEpoch++
     // Capture, so a thumb that slides off the pad mid-corner keeps steering
     // instead of silently letting go.
     element.setPointerCapture(event.pointerId)
