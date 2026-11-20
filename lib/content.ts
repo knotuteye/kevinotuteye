@@ -2,6 +2,9 @@ import aboutJson from '../public/json/about.json'
 import caseStudiesJson from '../public/json/case-studies.json'
 import experienceJson from '../public/json/experience.json'
 import projectsJson from '../public/json/projects.json'
+import stripsJson from '../public/json/strips.json'
+import weightsJson from '../public/json/weights.json'
+import { CLOTH_ORDER, PATTERNS, type PatternId } from './kente'
 
 /**
  * Single source of truth for site copy. The JSON is statically imported, so it
@@ -28,9 +31,19 @@ export type Role = {
   projects: Project[]
 }
 
+export type Shot = {
+  src: string
+  width: number
+  height: number
+  alt: string
+  caption?: string
+}
+
 type Study = {
   /** Shorter name for project rows. */
   title?: string
+  /** A screenshot of the work, shown on its page. Files live in /public/img/work. */
+  image?: Shot
   metric?: { value: string; label: string }
   headline?: { from: string; to: string }
   summary?: string
@@ -50,6 +63,8 @@ export type Place = {
   country: string
   /** Display coordinates, already formatted. */
   coords: string
+  lat: number
+  lon: number
 }
 
 /**
@@ -57,11 +72,11 @@ export type Place = {
  * is the company's city, not a claim about where Kevin lived.
  */
 const PLACES: Record<string, Place> = {
-  accra: { city: 'Accra', country: 'GH', coords: '05.6037° N · 00.1870° W' },
-  kumasi: { city: 'Kumasi', country: 'GH', coords: '06.6885° N · 01.6244° W' },
-  charlotte: { city: 'Charlotte', country: 'US', coords: '35.2271° N · 80.8431° W' },
-  auckland: { city: 'Auckland', country: 'NZ', coords: '36.8485° S · 174.7633° E' },
-  boston: { city: 'Boston', country: 'US', coords: '42.3601° N · 71.0589° W' },
+  accra: { city: 'Accra', country: 'GH', coords: '05.6037° N · 00.1870° W', lat: 5.6037, lon: -0.187 },
+  kumasi: { city: 'Kumasi', country: 'GH', coords: '06.6885° N · 01.6244° W', lat: 6.6885, lon: -1.6244 },
+  charlotte: { city: 'Charlotte', country: 'US', coords: '35.2271° N · 80.8431° W', lat: 35.2271, lon: -80.8431 },
+  auckland: { city: 'Auckland', country: 'NZ', coords: '36.8485° S · 174.7633° E', lat: -36.8485, lon: 174.7633 },
+  boston: { city: 'Boston', country: 'US', coords: '42.3601° N · 71.0589° W', lat: 42.3601, lon: -71.0589 },
 }
 
 export const KUMASI = PLACES.kumasi
@@ -106,6 +121,20 @@ function tidy(text: string): string {
     .join(' ')
 }
 
+/** "JLS TRADING CO." → "JLS Trading Co.", keeping acronyms intact. */
+function titleCase(text: string): string {
+  if (text !== text.toUpperCase()) return text
+  return text
+    .split(' ')
+    .map((word) => {
+      const bare = word.replace(/[^A-Z]/g, '')
+      if (ACRONYMS.has(bare)) return word
+      const lower = word.toLowerCase()
+      return lower.charAt(0).toUpperCase() + lower.slice(1)
+    })
+    .join(' ')
+}
+
 function splitName(name: string): { title: string; subtitle?: string } {
   const [head, ...rest] = name.split(' — ')
   return {
@@ -144,9 +173,18 @@ function yearOf(date: string): number {
 /* Chapters: the roles, oldest first                                   */
 /* ------------------------------------------------------------------ */
 
+export type StripInfo = {
+  pattern: PatternId
+  /** Name of the kente design the strip is woven after. */
+  name: string
+  meaning: string
+  note: string
+}
+
 export type Chapter = {
   id: string
   index: number
+  strip: StripInfo
   role: string
   company: string
   about: string
@@ -190,13 +228,24 @@ const ordered = [...experience].sort(
   (a, b) => monthsOf(a.startDate) - monthsOf(b.startDate)
 )
 
+const stripTable = stripsJson.strips as Record<string, Omit<StripInfo, 'pattern'> & { pattern: string }>
+
+function stripOf(id: string, index: number): StripInfo {
+  const info = stripTable[id]
+  const fallback = CLOTH_ORDER[index % CLOTH_ORDER.length]
+  if (!info) return { pattern: fallback, name: '', meaning: '', note: '' }
+  const pattern = (info.pattern in PATTERNS ? info.pattern : fallback) as PatternId
+  return { ...info, pattern }
+}
+
 export const chapters: Chapter[] = ordered.map((role, index) => {
   const id = slugify(splitCompany(role.company).name)
   return {
     id,
     index,
+    strip: stripOf(id, index),
     role: role.role,
-    company: splitCompany(role.company).name,
+    company: titleCase(splitCompany(role.company).name),
     about: role.aboutCompany,
     start: role.startDate,
     end: role.endDate,
@@ -206,7 +255,7 @@ export const chapters: Chapter[] = ordered.map((role, index) => {
   }
 })
 
-/** Side projects come from the KNUST years, so they sit in the warm end. */
+/** Side projects borrow the warm end of the cloth. */
 export const sideProjectEntries: ProjectEntry[] = sideProjects.map((p) => entry(p))
 
 export const allProjects: ProjectEntry[] = [
@@ -242,6 +291,42 @@ export const route: { place: Place; year: number }[] = (() => {
   }
   return out
 })()
+
+/** The cloth: one strip per chapter, oldest on the left. */
+export const clothPatterns: PatternId[] = chapters.map((c) => c.strip.pattern)
+
+/** The strip a project was woven in. Side projects borrow the first. */
+export function patternOf(project: ProjectEntry): PatternId {
+  return chapterOf(project)?.strip.pattern ?? clothPatterns[0] ?? 'ahwepan'
+}
+
+/* ------------------------------------------------------------------ */
+/* Weights: Asante gold weights paired with project metrics            */
+/* ------------------------------------------------------------------ */
+
+export type Weight = {
+  id: string
+  image: string
+  width: number
+  height: number
+  title: string
+  maker: string
+  date: string
+  accession: string
+  credit: string
+  url: string
+  note?: string
+  project: ProjectEntry
+  metric: { value: string; label: string }
+}
+
+export const weightsIntro = weightsJson.intro
+
+export const weights: Weight[] = weightsJson.weights.flatMap((w) => {
+  const project = projectBySlug(w.project)
+  const metric = project?.study?.metric
+  return project && metric ? [{ ...w, project, metric }] : []
+})
 
 /* ------------------------------------------------------------------ */
 /* Contact                                                             */

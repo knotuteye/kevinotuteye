@@ -1,12 +1,16 @@
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import { chapterOf, email, projectBySlug } from '../../lib/content'
+import { lockScroll } from '../../lib/scroll'
 import Link from '../Link'
 import Clocks from './Clocks'
+import SoundToggle from './SoundToggle'
+import ThemeToggle from './ThemeToggle'
 
 export const NAV = [
   { href: '/work', label: 'Work' },
   { href: '/projects', label: 'Projects' },
+  { href: '/blog', label: 'Writing' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ]
@@ -24,7 +28,11 @@ function section(pathname: string, asPath: string): string {
   return '/' + (pathname.split('/')[1] ?? '')
 }
 
-export default function SiteHeader({ tone }: { tone: 'ink' | 'cotton' }) {
+/**
+ * Sits over the top of every page rather than in the flow, so the home page's
+ * loom can run edge to edge underneath it.
+ */
+export default function SiteHeader() {
   const { pathname, asPath } = useRouter()
   const current = section(pathname, asPath)
   const [open, setOpen] = useState(false)
@@ -32,17 +40,13 @@ export default function SiteHeader({ tone }: { tone: 'ink' | 'cotton' }) {
 
   return (
     <>
-      <header className="relative z-20 mx-auto flex w-full max-w-page items-center justify-between gap-6 px-6 py-5 md:px-10 lg:px-16">
-        <Link
-          href="/"
-          aria-label="Kevin Otuteye, home"
-          className="t-display py-2 text-[30px] leading-none tracking-[0.02em]"
-        >
-          K·O
+      <header className="gutter absolute inset-x-0 top-0 z-40 mx-auto flex w-full max-w-page items-center justify-between gap-6 pt-5">
+        <Link href="/" aria-label="Kevin Otuteye, home" className="group flex items-baseline gap-3 py-2">
+          <span className="t-title text-[26px] leading-none">Kevin Otuteye</span>
         </Link>
 
         <nav aria-label="Main" className="hidden md:block">
-          <ul className="flex gap-8 text-[15px]">
+          <ul className="flex gap-9 text-[15px]">
             {NAV.map((item) => (
               <li key={item.href}>
                 <Link
@@ -57,7 +61,11 @@ export default function SiteHeader({ tone }: { tone: 'ink' | 'cotton' }) {
           </ul>
         </nav>
 
-        <Clocks tone={tone} className="hidden lg:flex" />
+        <div className="hidden items-center gap-6 lg:flex">
+          <Clocks />
+          <ThemeToggle className="text-soft" />
+          <SoundToggle className="text-soft" />
+        </div>
 
         <button
           ref={menuButton}
@@ -65,9 +73,7 @@ export default function SiteHeader({ tone }: { tone: 'ink' | 'cotton' }) {
           aria-expanded={open}
           aria-controls="menu"
           onClick={() => setOpen(true)}
-          className={`t-label inline-flex h-12 items-center border px-5 md:hidden ${
-            tone === 'cotton' ? 'border-umber' : 'border-seam'
-          }`}
+          className="t-label inline-flex h-11 items-center rounded-full border border-seam bg-ground/70 px-5 backdrop-blur md:hidden"
         >
           Menu
         </button>
@@ -91,15 +97,13 @@ function MobileMenu({ current, onClose }: { current: string; onClose: () => void
 
   useEffect(() => {
     closeButton.current?.focus()
-    const { style } = document.documentElement
-    const previous = style.overflow
-    style.overflow = 'hidden'
+    lockScroll(true)
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => {
-      style.overflow = previous
+      lockScroll(false)
       window.removeEventListener('keydown', onKey)
     }
   }, [onClose])
@@ -110,30 +114,31 @@ function MobileMenu({ current, onClose }: { current: string; onClose: () => void
       role="dialog"
       aria-modal="true"
       aria-label="Menu"
-      className="fixed inset-0 z-50 flex flex-col bg-ink px-6 py-5 text-cotton"
+      className="gutter fixed inset-0 z-[110] flex flex-col bg-ground pb-6 pt-5 text-fg"
     >
       <div className="flex items-center justify-between">
-        <span className="t-display py-2 text-[30px] leading-none">K·O</span>
+        <span className="t-title py-2 text-[26px] leading-none">Kevin Otuteye</span>
         <button
           ref={closeButton}
           type="button"
           onClick={onClose}
-          className="t-label inline-flex h-12 items-center border border-seam px-5"
+          className="t-label inline-flex h-11 items-center rounded-full border border-seam px-5"
         >
           Close
         </button>
       </div>
-      <nav aria-label="Main" className="mt-12 flex-1">
-        <ul className="flex flex-col gap-2">
-          {NAV.map((item) => (
-            <li key={item.href}>
+      <nav aria-label="Main" className="mt-14 flex-1">
+        <ul className="flex flex-col">
+          {NAV.map((item, i) => (
+            <li key={item.href} className="border-t border-seam">
               <Link
                 href={item.href}
                 onClick={onClose}
                 aria-current={current === item.href ? 'page' : undefined}
-                className="t-display block py-1 text-[72px] aria-[current=page]:text-gold"
+                className="t-display flex items-baseline justify-between py-3 text-[64px] aria-[current=page]:italic aria-[current=page]:text-accent"
               >
                 {item.label}
+                <span className="t-label text-muted">0{i + 1}</span>
               </Link>
             </li>
           ))}
@@ -143,7 +148,13 @@ function MobileMenu({ current, onClose }: { current: string; onClose: () => void
         <a href={`mailto:${email}`} className="text-[17px] underline underline-offset-4">
           {email}
         </a>
-        <Clocks />
+        <div className="flex items-center justify-between">
+          <Clocks />
+          <div className="flex items-center gap-5">
+            <ThemeToggle className="text-soft" />
+            <SoundToggle className="text-soft" />
+          </div>
+        </div>
       </div>
     </div>
   )

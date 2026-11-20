@@ -2,7 +2,7 @@ import Head from 'next/head'
 
 const SITE = 'Kevin Otuteye'
 const DEFAULT_DESCRIPTION =
-  'Kevin Otuteye, senior software engineer building LLM features and auditable workflows for HIPAA-compliant healthcare platforms. Work, projects and the route from Kumasi to Boston.'
+  'Kevin Otuteye, AI and health tech engineer: LLM features in production, auditable clinical workflows and HIPAA-compliant platforms. Eight roles, woven strip by strip into one kente cloth.'
 
 /**
  * Absolute origin, which Open Graph requires and relative paths cannot give.

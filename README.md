@@ -1,34 +1,45 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Kevin Otuteye — Strip by strip
 
-## Getting Started
-
-First, run the development server:
+Portfolio of Kevin Otuteye, senior software engineer. The art direction treats a career the way kente is made: woven one narrow strip at a time, then sewn edge to edge into one cloth. Each role is a strip, woven after a named kente design; the current role is still on the loom.
 
 ```bash
-npm run dev
-# or
-yarn dev
+npm run dev     # http://localhost:3000
+npm run build
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it fits together
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+| Piece | Where |
+| --- | --- |
+| Pattern book: strip drafts, motifs, compiled textures | `lib/kente.ts` |
+| The loom: thread-level WebGL2 shader | `components/cloth/engine.ts` |
+| React wrapper (lazy context, pointer light, adaptive resolution) | `components/cloth/Cloth.tsx` |
+| Home: pinned scroll story from one strip to the whole cloth | `components/home/LoomStory.tsx` |
+| Page transition: the cloth drops over the page | `components/Transition.tsx`, `lib/transition.ts` |
+| Loom sounds, synthesised, off by default | `lib/sound.ts` |
+| Design tokens (UI colours and thread dyes) | `Theme.js` |
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.tsx`.
+### Content
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+All copy lives in `public/json/`:
 
-## Learn More
+- `experience.json`, `projects.json`, `about.json`, `case-studies.json`: roles, projects and case studies.
+- `strips.json`: which kente design each role's strip is woven after, with its name and meaning. **Check names and meanings with someone who knows the cloth before changing them.**
+- `weights.json`: the gold weights paired with each headline metric.
 
-To learn more about Next.js, take a look at the following resources:
+### Regenerating the map
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`lib/map.json` is a bit grid of land built from Natural Earth's 1:110m land shapes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```bash
+curl -L -o /tmp/land.json https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_land.geojson
+node scripts/make-map.mjs /tmp/land.json
+```
 
-## Deploy on Vercel
+## Credits
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- **Gold weights (abrammuo)**: The Cleveland Museum of Art, open access, CC0. Accession numbers 1969.265, 1961.399, 1969.266, 1935.306 and 1962.244. Cut out of their studio backgrounds for this site; see `public/json/weights.json`.
+- **Map**: [Natural Earth](https://www.naturalearthdata.com), public domain.
+- **Type**: Instrument Serif and Instrument Sans (Instrument), JetBrains Mono (JetBrains), SIL Open Font License.
+- **Kente**: the drafts are interpretations made for a screen, after named designs from the Asante and Ewe weaving traditions. They are not reproductions of specific cloths.

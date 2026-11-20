@@ -1,5 +1,5 @@
 {
-  "summary": "Senior Software Engineer with 7+ years owning products end-to-end in HIPAA-compliant healthcare systems. Built and shipped Gemini-powered features in production, turned an ad hoc clinical process into a state-based, auditable workflow, and architected a serverless AWS backend at 99.99% uptime. Partnered with the FDA compliance team on regulatory validation in CI/CD that supported a 5,000+ patient clinical trial launch.",
+  "summary": "AI and health tech engineer with 7+ years of shipping software, the last five owning HIPAA-compliant products end to end at Retain Health. I put LLMs into production where the stakes are clinical: conversational check-ins for a consumer app with 60,000+ regular users, and AI-assisted authoring that checks clinicians' report content against biomarkers. Around that AI sits the part that makes it safe to use: state-based, auditable clinical workflows, clinician sign-off before anything reaches a patient, and a serverless AWS platform at 99.99% uptime, with regulatory validation in CI/CD built alongside the FDA compliance team for a 5,000+ patient clinical trial launch.",
   "education": [
     {
       "qualification": "BSc, Computer Engineering",
@@ -25,13 +25,11 @@
     {
       "category": "AI / LLM",
       "items": [
-        "Google Gemini API (production: conversational patient messaging, AI-assisted clinical authoring and verification)",
-        "Cursor",
-        "Claude Code",
-        "Antigravity",
-        "GitHub Copilot",
-        "Claude",
-        "ChatGPT"
+        "LLM features in production (Google Gemini API: conversational patient messaging, AI-assisted clinical authoring and verification)",
+        "Claude API (model tiering, batch processing, prompt caching, schema-validated output)",
+        "Grounding and verifying model output against a source of truth",
+        "Human-in-the-loop review and sign-off flows",
+        "Claude Code, Cursor, Antigravity, GitHub Copilot"
       ]
     },
     {
@@ -39,6 +37,7 @@
       "items": [
         "Event-driven and state-based workflow design",
         "Serverless architecture",
+        "Async job queues (SQS, Lambda workers)",
         "Distributed systems",
         "Microservices",
         "RESTful APIs",
@@ -80,9 +79,11 @@
     {
       "category": "Compliance & security",
       "items": [
-        "Audit-trail-driven workflows",
         "HIPAA-compliant data handling",
-        "PHI-aware system design"
+        "PHI-aware system design",
+        "Append-only audit trails",
+        "Versioned, tracked edits on signed records",
+        "Regulatory validation in CI/CD"
       ]
     },
     {

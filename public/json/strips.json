@@ -1,0 +1,53 @@
+{
+  "_comment": "One strip of cloth per role, keyed by chapter id (the company name, slugified; see lib/content.ts). `pattern` picks a draft from lib/kente.ts. Each strip is woven after a named kente design whose meaning suits the chapter; `name` and `meaning` are shown on the site, so check spelling and sense with someone who knows the cloth before changing them. `note` is one line on why this design fits this chapter.",
+  "strips": {
+    "truckrsoft-technologies": {
+      "pattern": "ahwepan",
+      "name": "Ahwepan",
+      "meaning": "Plain. The simplest cloth: warp stripes and very few motifs.",
+      "note": "A first job. Learn the warp before you try the weft."
+    },
+    "aces-knust": {
+      "pattern": "abusua",
+      "name": "Abusua ye dom",
+      "meaning": "The family is a force.",
+      "note": "Four student developers, weekly sprints, one shared site."
+    },
+    "asqii-ltd": {
+      "pattern": "babadua",
+      "name": "Babadua",
+      "meaning": "A tough, jointed cane, used to build. Strength made of segments.",
+      "note": "Software for a national regulator, delivered, deployed and taught."
+    },
+    "jls-trading-co": {
+      "pattern": "sika",
+      "name": "Sika futuro",
+      "meaning": "Gold dust. Wealth, and the care it takes to count it.",
+      "note": "Warehouses, inventory and fuel bills: commerce, measured."
+    },
+    "quest-systems-ltd": {
+      "pattern": "wofro",
+      "name": "Wofro dua pa a",
+      "meaning": "When you climb a good tree, you are given a push.",
+      "note": "A first hospital system. The push toward healthcare."
+    },
+    "wink-initiatives": {
+      "pattern": "obaakofoo",
+      "name": "Obaakofoo mmu man",
+      "meaning": "One person does not rule a nation.",
+      "note": "Leading four developers to match blood donors with those in need."
+    },
+    "my-creativity-box-inc": {
+      "pattern": "emaada",
+      "name": "Emaa da",
+      "meaning": "It has never happened before. Novelty; invention.",
+      "note": "Learning kits for curious kids, and the shops that sell them."
+    },
+    "retain-health": {
+      "pattern": "adweneasa",
+      "name": "Adweneasa",
+      "meaning": "My skill is exhausted. Every motif at once: the weaver's masterwork.",
+      "note": "Still on the loom."
+    }
+  }
+}

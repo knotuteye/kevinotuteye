@@ -7,15 +7,44 @@
 /* ------------------------------------------------------------------ */
 
 @layer base {
-  :root {
-    --ease-loom: cubic-bezier(0.7, 0, 0.2, 1);
-    --ease-out: cubic-bezier(0.2, 0.7, 0.1, 1);
+  /* Theme roles as RGB triplets, so Tailwind can add opacity. Values mirror
+     Theme.js; light is the default, dark is opt-in from the header toggle. */
+  :root,
+  :root[data-theme='light'] {
+    --c-ground: 244 239 229;
+    --c-loom: 234 227 213;
+    --c-fg: 23 19 15;
+    --c-soft: 74 66 56;
+    --c-muted: 103 94 80;
+    --c-seam: 218 209 191;
+    --c-accent: 138 85 8;
+    --c-accent2: 43 74 140;
+    --c-shadow: 58 42 20;
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'] {
+    --c-ground: 16 14 11;
+    --c-loom: 26 23 19;
+    --c-fg: 241 234 219;
+    --c-soft: 181 172 156;
+    --c-muted: 163 154 139;
+    --c-seam: 46 41 35;
+    --c-accent: 227 166 47;
+    --c-accent2: 143 168 224;
+    --c-shadow: 0 0 0;
     color-scheme: dark;
   }
 
+  :root {
+    --ease-beat: cubic-bezier(0.76, 0, 0.24, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --gutter: clamp(20px, 4vw, 64px);
+  }
+
   html {
-    background: theme('colors.ink');
-    color: theme('colors.cotton');
+    background: rgb(var(--c-ground));
+    color: rgb(var(--c-fg));
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -29,7 +58,7 @@
 
   ::selection {
     background: theme('colors.gold');
-    color: theme('colors.ink');
+    color: theme('colors.night');
   }
 
   a {
@@ -38,17 +67,8 @@
   }
 
   :focus-visible {
-    outline: 2px solid theme('colors.gold');
+    outline: 2px solid rgb(var(--c-accent));
     outline-offset: 3px;
-  }
-
-  .theme-cotton :focus-visible {
-    outline-color: theme('colors.indigo');
-  }
-
-  .theme-cotton ::selection {
-    background: theme('colors.indigo');
-    color: theme('colors.cotton');
   }
 }
 
@@ -57,53 +77,69 @@
 /* ------------------------------------------------------------------ */
 
 @layer components {
-  /* Archivo at its narrowest: tight like a strip at rest. */
+  /* Instrument Serif at poster size: tall, close-set, like strips at rest. */
   .t-display {
-    font-family: theme('fontFamily.display');
-    font-weight: 800;
-    font-variation-settings: 'wdth' 62.5;
-    text-transform: uppercase;
-    line-height: 0.84;
-    letter-spacing: -0.01em;
+    font-family: theme('fontFamily.serif');
+    font-weight: 400;
+    line-height: 0.86;
+    letter-spacing: -0.025em;
   }
 
-  .t-sub {
-    font-family: theme('fontFamily.display');
-    font-weight: 700;
-    font-variation-settings: 'wdth' 62.5;
-    text-transform: uppercase;
+  .t-title {
+    font-family: theme('fontFamily.serif');
+    font-weight: 400;
     line-height: 1;
+    letter-spacing: -0.015em;
   }
 
   .t-label {
     font-family: theme('fontFamily.mono');
-    font-size: 12px;
-    line-height: 1.4;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
-  /* Stretching the cloth: the width axis opens up on hover and focus. */
-  .stretch {
-    transition: font-variation-settings 400ms var(--ease-loom);
+  .t-lede {
+    font-size: clamp(19px, 1.55vw, 24px);
+    line-height: 1.45;
+    letter-spacing: -0.005em;
   }
-  .group:hover .stretch,
-  .group:focus-visible .stretch,
-  .stretch:hover {
-    font-variation-settings: 'wdth' 100;
+
+  .gutter {
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
   }
 
   .link-underline {
     background-image: linear-gradient(currentColor, currentColor);
     background-size: 0% 1px;
-    background-position: 0 100%;
+    background-position: 100% 100%;
     background-repeat: no-repeat;
-    transition: background-size 400ms var(--ease-loom);
+    transition: background-size 600ms var(--ease-beat);
   }
   .link-underline:hover,
   .link-underline:focus-visible,
   .link-underline[aria-current='page'] {
     background-size: 100% 1px;
+    background-position: 0 100%;
+  }
+
+  /* A thread drawn under a row on hover: the warp stripe of its strip. */
+  .thread-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 900ms var(--ease-beat);
+  }
+  .group:hover .thread-rule,
+  .group:focus-visible .thread-rule {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 }
 
@@ -114,10 +150,10 @@
 
 .js .reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(28px);
   transition:
-    opacity 700ms var(--ease-out),
-    transform 900ms var(--ease-out);
+    opacity 900ms var(--ease-out),
+    transform 1100ms var(--ease-out);
   transition-delay: var(--delay, 0ms);
 }
 .js .reveal.is-in {
@@ -125,110 +161,144 @@
   transform: none;
 }
 
-.lines > span {
+/* Over and under: alternate letters rise from below and drop from above,
+   like a weft passing over one warp and under the next. */
+.woven {
   display: block;
+}
+.woven .w-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.woven .w-ch {
+  display: inline-block;
   overflow: hidden;
-  /* Room for descenders and the tight line-height. */
-  padding-bottom: 0.06em;
-  margin-bottom: -0.06em;
+  /* Room for ascenders, descenders and the italic overhang. */
+  padding: 0.08em 0.04em 0.12em;
+  margin: -0.08em -0.04em -0.12em;
+  vertical-align: top;
 }
-.lines > span > span {
-  display: block;
+.woven .w-ch > span {
+  display: inline-block;
 }
-.js .lines > span > span {
-  transform: translateY(105%);
-  transition: transform 900ms var(--ease-out);
-  transition-delay: calc(var(--line, 0) * 80ms + var(--delay, 0ms));
+.js .woven .w-ch > span {
+  transform: translateY(var(--from, 110%));
+  transition: transform 1200ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 28ms + var(--delay, 0ms));
 }
-.js .lines.is-in > span > span {
+.js .woven.is-in .w-ch > span {
   transform: none;
 }
 
 /* ------------------------------------------------------------------ */
-/* The loom (components/Loom.tsx, lib/loom.ts)                         */
+/* Smooth scroll (lenis)                                               */
 /* ------------------------------------------------------------------ */
 
-.loom {
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ */
+/* Page transition (components/Transition.tsx)                         */
+/* ------------------------------------------------------------------ */
+
+.transition-cloth {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: flex;
-  overflow: hidden;
   pointer-events: none;
-}
-
-.loom-strip {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: theme('colors.ink');
-  border-left: 2px solid theme('colors.ink');
-  transform: translateY(var(--from));
-  will-change: transform;
-}
-
-.loom[data-phase='idle'] {
   visibility: hidden;
 }
-.loom[data-phase='idle'] .loom-strip {
-  transition: none;
-}
-
-.loom[data-phase='cover'] {
+.transition-cloth[data-active='true'] {
+  visibility: visible;
   pointer-events: auto;
 }
-.loom[data-phase='cover'] .loom-strip {
-  transform: none;
-  transition: transform 450ms var(--ease-loom) calc(var(--i) * 18ms);
-}
 
-.loom[data-phase='reveal'] .loom-strip {
-  transform: translateY(var(--to));
-  transition: transform 450ms var(--ease-loom) calc(var(--i) * 18ms);
+/* Fallback when WebGL is missing: plain ink strips. */
+.transition-strips {
+  position: absolute;
+  inset: 0;
+  display: flex;
 }
-
-.loom[data-phase='intro'] .loom-strip {
-  transform: none;
-  animation: loom-lift 450ms var(--ease-loom) calc(450ms + var(--i) * 18ms) forwards;
-}
-
-@keyframes loom-lift {
-  to {
-    transform: translateY(var(--to));
-  }
-}
-
-@media (max-width: 1023px) {
-  .loom-strip:nth-child(n + 13) {
-    display: none;
-  }
-}
-@media (max-width: 639px) {
-  .loom-strip:nth-child(n + 9) {
-    display: none;
-  }
+.transition-strips > span {
+  flex: 1;
+  background: rgb(var(--c-loom));
+  border-left: 2px solid rgb(var(--c-ground));
+  transform: translateY(var(--y, 101%));
+  transition: transform 520ms var(--ease-beat) calc(var(--i) * 30ms);
 }
 
 /* ------------------------------------------------------------------ */
-/* Reduced motion: no cloth, no travel. A short fade between pages.    */
+/* Grain: a whisper of texture over flat grounds, so ink reads as      */
+/* cloth rather than screen.                                           */
+/* ------------------------------------------------------------------ */
+
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+/* On cotton the grain is dark fibre, multiplied in, rather than light dust. */
+:root:not([data-theme='dark']) .grain::after {
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion: no travel, no smooth scroll. Short fades only.      */
 /* ------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .loom {
-    display: none;
-  }
   .js .reveal,
-  .js .lines > span > span {
+  .js .woven .w-ch > span {
     transform: none;
-    transition: opacity 200ms linear;
+    transition: opacity 240ms linear;
   }
-  .stretch,
-  .link-underline {
+  .link-underline,
+  .thread-rule {
     transition: none;
   }
-  html {
-    scroll-behavior: auto;
+  .transition-strips > span {
+    transition: none;
+  }
+}
+
+@keyframes sound {
+  0%,
+  100% {
+    height: 3px;
+  }
+  50% {
+    height: 12px;
+  }
+}
+
+@keyframes thread {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  50.01% {
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
   }
 }

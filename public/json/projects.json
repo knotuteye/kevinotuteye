@@ -7,11 +7,29 @@
   },
   "projects": [
     {
+      "name": "Job-search pipeline — LLM agents held to a fact bank",
+      "link": "",
+      "about": "A personal pipeline that finds roles, scores them and drafts tailored applications with Claude. Cheap models do the volume (Haiku scores postings in batches), stronger ones the writing (Sonnet tailors), and every sentence it writes about me has to cite an entry in a hand-checked fact bank. A deterministic check in code then rejects any number that is not in the cited facts, any fact borrowed from the wrong job and any title word I have never held, and a second model audits the rest for inflated scope. Nothing is submitted until I click Submit myself.",
+      "technologies": [
+        "Claude API",
+        "TypeScript",
+        "Zod",
+        "SQLite",
+        "Drizzle",
+        "Playwright",
+        "GitHub Actions"
+      ]
+    },
+    {
       "name": "Open source — Snapcraft and charmhub.io (Canonical)",
-      "link": "https://github.com/knotuteye",
-      "about": "Merged bug-fix and feature pull requests to Snapcraft and charmhub.io, both maintained by Canonical, across 2024 and 2025.",
+      "link": "https://github.com/canonical/snapcraft.io/pulls?q=is%3Apr+author%3Aknotuteye+is%3Amerged",
+      "about": "Four merged pull requests to snapcraft.io, the Snap Store's website, and one to charmhub.io, both maintained by Canonical, in 2022. I implemented the Star Developers feature end to end and launched it, fixed an inconsistency where a snap's Published field showed \"yesterday\" on one page and a date on another (with tests for the date-time conversion), and fixed the charmhub.io channel map collapsing on mobile.",
       "technologies": [
         "Open source",
+        "Python",
+        "Flask",
+        "React",
+        "Jest",
         "Code review"
       ]
     },

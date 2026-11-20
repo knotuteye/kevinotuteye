@@ -1,34 +1,36 @@
-import { Archivo, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 
 /**
- * Self-hosted at build time by next/font, so there is no request to Google from
- * the visitor's browser and no layout shift while fonts load.
+ * Self-hosted at build time by next/font: no request to Google from the
+ * visitor's browser, and no layout shift while fonts load.
  *
- * Archivo is loaded as the full variable font with its width axis. The narrow
- * width (62.5) is the brand, and widening it on hover ("stretching the cloth")
- * needs the axis available at runtime.
+ * Instrument Serif carries the voice: tall, narrow and calm, the way a strip
+ * of cloth is. Its italic marks the words that matter. Instrument Sans, from
+ * the same family, does the reading; JetBrains Mono does the labelling, like
+ * the accession numbers on a museum card.
  */
-export const archivo = Archivo({
+export const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
-  axes: ['wdth'],
-  variable: '--font-archivo',
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
   display: 'swap',
 })
 
 export const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
-  variable: '--font-instrument',
+  variable: '--font-sans',
   display: 'swap',
 })
 
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-jetbrains',
+  variable: '--font-mono',
   display: 'swap',
 })
 
 export const fontVariables = [
-  archivo.variable,
+  instrumentSerif.variable,
   instrumentSans.variable,
   jetbrainsMono.variable,
 ].join(' ')

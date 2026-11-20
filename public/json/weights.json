@@ -1,0 +1,73 @@
+{
+  "_comment": "Asante and Akan gold weights (abrammuo) from the Cleveland Museum of Art's open access collection, released under CC0. Each is paired with a project metric by `project` (a project slug; the metric itself lives in case-studies.json). Images are cut out of their studio backgrounds and stored in /public/art. Keep `credit` and `url` with any use of an image.",
+  "intro": "For centuries in Asante, gold dust was money, and it was measured against small cast-brass weights. A royal court kept hundreds; most households kept about a dozen. These are what the work weighs.",
+  "weights": [
+    {
+      "id": "cross",
+      "project": "shared-serverless-platform-fda-compliance-pipeline",
+      "image": "/art/goldweight-cross.webp",
+      "width": 900,
+      "height": 765,
+      "title": "Gold weight (abrammuo): Geometric",
+      "maker": "Asante goldsmith, Ghana",
+      "date": "1800s",
+      "accession": "1969.265",
+      "credit": "The Cleveland Museum of Art, CC0",
+      "url": "https://www.clevelandart.org/art/1969.265"
+    },
+    {
+      "id": "fish",
+      "project": "retainyourbrain",
+      "image": "/art/goldweight-fish.webp",
+      "width": 900,
+      "height": 430,
+      "title": "Gold weight (abrammuo): Fish",
+      "maker": "Asante goldsmith, Ghana",
+      "date": "1800s",
+      "accession": "1961.399",
+      "credit": "The Cleveland Museum of Art, CC0",
+      "url": "https://www.clevelandart.org/art/1961.399"
+    },
+    {
+      "id": "drum",
+      "project": "retainmd-clinician-portal-emr",
+      "image": "/art/goldweight-drum.webp",
+      "width": 900,
+      "height": 630,
+      "title": "Gold weight (abrammuo): Drum",
+      "maker": "Asante goldsmith, Ghana",
+      "date": "1800s",
+      "accession": "1969.266",
+      "credit": "The Cleveland Museum of Art, CC0",
+      "url": "https://www.clevelandart.org/art/1969.266"
+    },
+    {
+      "id": "knot",
+      "project": "pints-app",
+      "image": "/art/goldweight-knot.webp",
+      "width": 900,
+      "height": 607,
+      "title": "Gold weight (abrammuo): Geometric form",
+      "maker": "Akan-style artist, Ghana",
+      "date": "1800s",
+      "accession": "1962.244",
+      "credit": "The Cleveland Museum of Art, CC0",
+      "url": "https://www.clevelandart.org/art/1962.244",
+      "note": "Its worn, rounded edges suggest it was used often."
+    },
+    {
+      "id": "antelope",
+      "project": "kronos",
+      "image": "/art/goldweight-antelope.webp",
+      "width": 731,
+      "height": 900,
+      "title": "Gold weight (abrammuo): Antelope",
+      "maker": "Akan-style artist, Ghana",
+      "date": "1800s",
+      "accession": "1935.306",
+      "credit": "The Cleveland Museum of Art, CC0",
+      "url": "https://www.clevelandart.org/art/1935.306",
+      "note": "Its long horns may pun on the proverb “had I known”: hindsight as perfect vision."
+    }
+  ]
+}

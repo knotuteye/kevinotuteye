@@ -1,11 +1,11 @@
 {
   "_comment": "Extra material for project pages, keyed by project slug (see lib/content.ts). Everything here is optional: a project without an entry still gets a page built from its `about` text. `metric` appears on project rows; `title` is a shorter name for rows (the page keeps the full one); `headline` replaces the title on the case study; `sections` replace the single paragraph. `featured` sets the home page order.",
   "featured": [
-    "kronos",
     "retainmd-clinician-portal-emr",
-    "shared-serverless-platform-fda-compliance-pipeline",
     "retainyourbrain",
-    "warehouse-digitization"
+    "shared-serverless-platform-fda-compliance-pipeline",
+    "job-search-pipeline",
+    "pints-app"
   ],
   "studies": {
     "kronos": {
@@ -38,31 +38,50 @@
         "value": "60,000+",
         "label": "regular users"
       },
-      "summary": "Retain Health's flagship consumer app, used regularly by 60,000+ people, with Gemini-powered conversational check-ins that support patients in keeping to their routines."
+      "title": "RetainYourBrain",
+      "summary": "Retain Health's flagship consumer app, used regularly by 60,000+ people, with Gemini-powered conversational check-ins that help patients keep to their brain-health routines.",
+      "sections": [
+        {
+          "title": "Conversational check-ins",
+          "body": "I built the app's Gemini-powered messaging: it checks in on whether patients are keeping to their routines and answers with real-time, motivational support, so the habit-building happens between clinic visits rather than only at them."
+        },
+        {
+          "title": "The Health Profile",
+          "body": "I developed and own the Health Profile system, with reusable custom graph components for a patient's own measures, and the Brain Health Report export that turns them into a document they can take to a clinician."
+        },
+        {
+          "title": "The move to React Native",
+          "body": "I am moving the app from AngularJS to React Native, one feature at a time: sessions that refresh with a grace period instead of signing patients out, a full password-reset flow, and a My Results screen for downloading the reports a clinician has sent."
+        }
+      ]
     },
     "retainmd-clinician-portal-emr": {
       "metric": {
-        "value": "5,000+",
-        "label": "patient clinical trial"
+        "value": "100%",
+        "label": "of clinician actions on the audit trail"
       },
       "title": "RetainMD EMR",
       "headline": {
         "from": "Ad hoc",
         "to": "Auditable"
       },
-      "summary": "A clinician-facing EMR supporting a 5,000+ patient clinical trial, where I turned an ad hoc clinical reporting process into a state-based, auditable workflow.",
+      "summary": "The clinician EMR at Retain Health: a state-based reporting workflow, AI-assisted authoring that checks itself against lab results, and a record of every change, so nothing reaches a patient without a clinician's sign-off.",
       "sections": [
         {
           "title": "The problem",
-          "body": "Patient reports followed an ad hoc clinical process. In a clinical trial, every report has to be reliable and every change has to be accountable."
+          "body": "Patient reports followed an ad hoc clinical process. A report that goes to a patient has to be right, and every change to it has to be accountable to the person who made it."
         },
         {
-          "title": "The approach",
-          "body": "I designed the Patient Report workflow as a state-based pipeline (draft, review, sign-off, published) with explicit status transitions, and led the Patient Report v3 workspace: a multi-tab clinician experience with live report preview, built from clinical stakeholder requirements."
+          "title": "The workflow",
+          "body": "I designed the Patient Report as a state-based pipeline (draft, review, sign-off, published) with explicit status transitions, and led the Patient Report v3 workspace: a multi-tab clinician experience with live report preview, built from clinical stakeholder requirements. Each report goes to the patient only when a clinician sends it, as a frozen copy that can be withdrawn until the patient opens it."
         },
         {
-          "title": "The result",
-          "body": "A reliable, auditable system, extended with patient-facing report generation and a clinician review and sign-off workflow. Gemini now assists clinicians as they author insights and checks report content against biomarkers and other clinical inputs."
+          "title": "AI, with a clinician in charge",
+          "body": "Gemini assists clinicians as they author insights and checks report content against biomarkers and other clinical inputs. Machine-drafted Patient Summaries run as background jobs and are stored apart from the clinician's notes; a clinician's edit always outranks the draft, and a redraft never overwrites what a clinician wrote."
+        },
+        {
+          "title": "The record",
+          "body": "An append-only audit trail records every portal request: who, in what role, on which patient, with before and after values for status changes and never the clinical text itself. Reports have full version history, and a signed visit is amended by tracked edits that keep the signed original intact and reject an edit made against a stale version."
         }
       ]
     },
@@ -76,7 +95,7 @@
       "sections": [
         {
           "title": "The platform",
-          "body": "A shared Node.js and TypeScript backend on AWS Lambda, CDK, RDS, S3 and API Gateway, serving the consumer app, the clinician EMR and the internal admin portal, with HIPAA-compliant handling of patient and clinical data."
+          "body": "A shared Node.js and TypeScript backend on AWS Lambda, CDK, RDS, S3, SQS and API Gateway, serving the consumer app, the clinician EMR and the internal admin portal, with HIPAA-compliant handling of patient and clinical data. Every outside integration has CloudWatch alarms, and the portal's error-rate and latency alarms are fed by metrics the audit trail writes."
         },
         {
           "title": "Compliance in the pipeline",
@@ -92,12 +111,57 @@
       "metric": {
         "value": "1,000+",
         "label": "users onboarded"
-      }
+      },
+      "summary": "A blood-donation app for Ghana that matches a request for blood with eligible donors of the right group nearby, built by a team of four that I led."
     },
     "warehouse-digitization": {
       "metric": {
         "value": "35%",
         "label": "lower forklift fuel cost"
+      }
+    },
+    "job-search-pipeline": {
+      "metric": {
+        "value": "2",
+        "label": "independent checks on every claim"
+      },
+      "title": "Job-search pipeline",
+      "headline": {
+        "from": "Generated",
+        "to": "Verified"
+      },
+      "summary": "A personal LLM pipeline that finds roles, scores them and drafts tailored applications with Claude, where every sentence it writes about me must cite a fact and pass two checks before I see it.",
+      "sections": [
+        {
+          "title": "The pipeline",
+          "body": "Job boards are polled once a day and filtered in plain code: location, title, seniority, salary floor, duplicates. Haiku scores what is left in batches against a rubric; Sonnet tailors a résumé, cover letter and screening answers for the best fits; I review, and a guard stops every form submission until I click Submit myself."
+        },
+        {
+          "title": "Grounding",
+          "body": "Every claim the model writes cites fact IDs from a hand-checked fact bank. Code then rejects any number that does not appear in the cited facts, any fact credited to the wrong job, and any headline word the facts do not support. A separate model call audits what is left for inflated scope, flagged as typed problems with a suggested fix."
+        },
+        {
+          "title": "Trusting the model less",
+          "body": "The model scores each part of the rubric, but the fit is summed and capped in code, and dropped to 40 if it found a dealbreaker. Token use and cost are logged for every call. A failed check does not throw the work away; the application is marked as needing attention and shows exactly which sentence failed and why."
+        }
+      ]
+    },
+    "learn-with-mochi": {
+      "image": {
+        "src": "/img/work/learn-with-mochi.jpg",
+        "width": 1440,
+        "height": 900,
+        "alt": "The Learn With Mochi home page: a coding board shaped like a bear's face, with a plush bear in a wooden rover, on a bright blue page.",
+        "caption": "learnwithmochi.com, as it stands today"
+      }
+    },
+    "wopri": {
+      "image": {
+        "src": "/img/work/wopri.jpg",
+        "width": 1440,
+        "height": 900,
+        "alt": "The WOPRI start screen: the word wopri in white on an orange gradient, with the question 'Your head. What's in it?' and a Start button.",
+        "caption": "The start screen of the WOPRI progressive web app"
       }
     }
   }

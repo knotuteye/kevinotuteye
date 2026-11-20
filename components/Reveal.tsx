@@ -7,106 +7,139 @@ import {
   type ElementType,
   type ReactNode,
 } from 'react'
-import {
-  getLoomPhase,
-  getServerLoomPhase,
-  LOOM,
-  subscribeLoom,
-} from '../lib/loom'
+import { getPhase, getServerPhase, subscribePhase } from '../lib/transition'
 
 /**
- * Adds `is-in` once the element scrolls into view, and never while the loom
- * is covering the screen, so nothing animates where nobody can see it. On the
- * first load the reveal waits for the intro to start lifting.
+ * Adds `is-in` once the element scrolls into view, but never while the cloth
+ * covers the screen, so nothing animates where nobody can see it.
  */
-function useReveal() {
+function useReveal(immediate = false) {
   const ref = useRef<HTMLElement>(null)
-  const phase = useSyncExternalStore(subscribeLoom, getLoomPhase, getServerLoomPhase)
+  const phase = useSyncExternalStore(subscribePhase, getPhase, getServerPhase)
   const ready = phase !== 'cover'
-  const intro = phase === 'intro'
 
   useEffect(() => {
     const el = ref.current
     if (!el || !ready) return
-    if (intro) el.style.setProperty('--intro', `${LOOM.introDelay}ms`)
+    if (immediate) {
+      requestAnimationFrame(() => el.classList.add('is-in'))
+      return
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return
         el.classList.add('is-in')
         observer.disconnect()
       },
-      { rootMargin: '0px 0px -8% 0px' }
+      { rootMargin: '0px 0px -10% 0px' }
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [ready, intro])
+  }, [ready, immediate])
 
   return ref
 }
 
 type RevealProps = {
   as?: ElementType
+  /** Play as soon as mounted rather than on scroll. */
+  immediate?: boolean
   delay?: number
   className?: string
   children: ReactNode
   id?: string
+  style?: CSSProperties
 }
 
-export function Reveal({ as = 'div', delay = 0, className = '', children, id }: RevealProps) {
-  const ref = useReveal()
+export function Reveal({ as = 'div', immediate = false, delay = 0, className = '', children, id, style }: RevealProps) {
+  const ref = useReveal(immediate)
   return createElement(
     as,
-    {
-      ref,
-      id,
-      className: `reveal ${className}`,
-      style: { '--delay': `calc(${delay}ms + var(--intro, 0ms))` } as CSSProperties,
-    },
+    { ref, id, className: `reveal ${className}`, style: { ...style, '--delay': `${delay}ms` } as CSSProperties },
     children
   )
 }
 
-type LinesProps = {
+type WovenProps = {
   as?: ElementType
-  lines: ReactNode[]
+  /** Lines of the heading. A line may hold `<em>`-style parts. */
+  lines: (string | { text: string; italic?: boolean; className?: string }[])[]
   delay?: number
   className?: string
   id?: string
+  /** Play as soon as mounted rather than on scroll. */
+  immediate?: boolean
 }
 
-/** A display heading whose lines rise out of their own masks, one after another. */
-export function Lines({ as = 'h2', lines, delay = 0, className = '', id }: LinesProps) {
-  const ref = useReveal()
+/**
+ * A heading woven in: letters alternate between rising from below and
+ * dropping from above, like a weft going over one warp and under the next.
+ * Screen readers get the plain text once; the letters are hidden from them.
+ */
+export function Woven({ as = 'h2', lines, delay = 0, className = '', id, immediate = false }: WovenProps) {
+  const ref = useReveal(immediate)
+  let i = 0
+  const label = lines
+    .map((line) => (typeof line === 'string' ? line : line.map((p) => p.text).join('')))
+    .join(' ')
+
   return createElement(
     as,
     {
       ref,
       id,
-      className: `lines ${className}`,
-      style: { '--delay': `calc(${delay}ms + var(--intro, 0ms))` } as CSSProperties,
+      'aria-label': label,
+      className: `woven ${className}`,
+      style: { '--delay': `${delay}ms` } as CSSProperties,
     },
-    lines.map((line, i) => (
-      <span key={i} style={{ '--line': i } as CSSProperties}>
-        <span>{line}</span>
-      </span>
-    ))
+    lines.map((line, l) => {
+      const parts = typeof line === 'string' ? [{ text: line }] : line
+      return (
+        <span key={l} aria-hidden="true" className="block">
+          {parts.map((part, p) => (
+            <span
+              key={p}
+              className={`${'italic' in part && part.italic ? 'italic' : ''} ${('className' in part && part.className) || ''}`}
+            >
+              {part.text.split(/(\s+)/).map((word, w) =>
+                /^\s+$/.test(word) ? (
+                  ' '
+                ) : (
+                  <span key={w} className="w-word">
+                    {Array.from(word).map((ch, c) => {
+                      const k = i++
+                      return (
+                        <span key={c} className="w-ch">
+                          <span style={{ '--i': k, '--from': k % 2 ? '-110%' : '110%' } as CSSProperties}>
+                            {ch}
+                          </span>
+                        </span>
+                      )
+                    })}
+                  </span>
+                )
+              )}
+            </span>
+          ))}
+        </span>
+      )
+    })
   )
 }
 
-/** The brand arrow, drawn so it matches the display type at any size. */
+/** The arrow, drawn to sit with the serif at any size. */
 export function Arrow({ className = '' }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
-      viewBox="0 0 150 110"
+      viewBox="0 0 24 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth={16}
-      strokeLinecap="square"
+      strokeWidth={1.5}
       className={className}
     >
-      <path d="M8 55 H130" />
-      <path d="M88 13 L132 55 L88 97" />
+      <path d="M0 8h22" />
+      <path d="M15 1l7 7-7 7" />
     </svg>
   )
 }

@@ -3,84 +3,94 @@ import { ImageResponse } from 'next/og'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { colors } from '../../Theme'
-import { cellThread, stripWarmth, THREADS, weaveModel } from '../../lib/weave'
+import { clothPatterns } from '../../lib/content'
+import { compileCloth, ENDS, PATTERNS } from '../../lib/kente'
 
 /**
- * The link preview card, drawn per route from the same tokens and weave model
- * as the site, so it can never drift from it. `?title=` sets the eyebrow.
+ * The link preview card, drawn per route from the same pattern book as the
+ * site's loom, so it cannot drift from it. `?title=` sets the eyebrow.
  *
- * The weave here is simplified to solid blocks: the card renderer (Satori) is
- * not a browser, and pinstripes at this size would only shimmer in a feed.
+ * The card renderer is not a browser and has no WebGL, so the cloth is drawn
+ * as plain coloured cells.
  */
 
-let fontsPromise: Promise<[Buffer, Buffer]> | null = null
+let fontsPromise: Promise<[Buffer, Buffer, Buffer]> | null = null
 
 function fonts() {
   const dir = path.join(process.cwd(), 'public', 'fonts')
   fontsPromise ??= Promise.all([
-    readFile(path.join(dir, 'archivo-condensed-800.ttf')),
+    readFile(path.join(dir, 'instrument-serif-400.ttf')),
+    readFile(path.join(dir, 'instrument-serif-400-italic.ttf')),
     readFile(path.join(dir, 'jetbrains-mono-400.ttf')),
   ])
   return fontsPromise
 }
 
-const STRIPS = 6
-const UNIT = 42
-const cloth = weaveModel(STRIPS, 12, 11)
+const STRIPS = 3
+const COLS = 12
+const WIDTH = 440
+const HEIGHT = 630
+const GAP = 4
+
+/**
+ * The last few strips of the cloth as rows of coloured cells, sampled from the
+ * loom's far-view colour texture. Satori only lays out flexbox, so each strip
+ * is a column of rows.
+ */
+const cloth = (() => {
+  const ids = clothPatterns.slice(-STRIPS)
+  const compiled = compileCloth(ids.map((id) => PATTERNS[id]))
+  const stripW = (WIDTH - GAP * (STRIPS - 1)) / STRIPS
+  const cell = stripW / COLS
+  const rows = Math.ceil(HEIGHT / cell)
+  const step = ENDS / COLS
+  return Array.from({ length: STRIPS }, (_, s) =>
+    Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: COLS }, (_, c) => {
+        const o = ((r * step) % compiled.height) * compiled.width * 4 + (s * ENDS + c * step + 1) * 4
+        return `rgb(${compiled.colour[o]},${compiled.colour[o + 1]},${compiled.colour[o + 2]})`
+      })
+    )
+  )
+})()
 
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   const raw = request.query.title
   const title = (typeof raw === 'string' ? raw : '').slice(0, 60)
-  const [archivo, mono] = await fonts()
+  const [serif, serifItalic, mono] = await fonts()
 
   const image = new ImageResponse(
     (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          background: colors.ink,
-          color: colors.cotton,
-        }}
-      >
+      <div style={{ width: '100%', height: '100%', display: 'flex', background: colors.ink, color: colors.cotton }}>
         <div
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '64px 72px',
+            padding: '60px 64px',
           }}
         >
-          <div style={{ display: 'flex', fontFamily: 'Mono', fontSize: 22, letterSpacing: 3, color: colors.gold }}>
-            {title ? title.toUpperCase() : 'SENIOR FULL-STACK SOFTWARE ENGINEER'}
+          <div style={{ display: 'flex', fontFamily: 'Mono', fontSize: 20, letterSpacing: 3, color: colors.gold }}>
+            {title ? title.toUpperCase() : 'AI + HEALTH TECH ENGINEER · ACCRA'}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Archivo', fontSize: 184, lineHeight: 0.84 }}>
-            <div style={{ display: 'flex' }}>KEVIN</div>
-            <div style={{ display: 'flex' }}>OTUTEYE</div>
+          <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Serif', fontSize: 168, lineHeight: 0.86, letterSpacing: -4 }}>
+            <div style={{ display: 'flex' }}>Kevin</div>
+            <div style={{ display: 'flex', fontStyle: 'italic', color: colors.gold }}>Otuteye</div>
           </div>
-          <div style={{ display: 'flex', fontFamily: 'Mono', fontSize: 20, letterSpacing: 2, color: colors.muted }}>
-            KUMASI → BOSTON
+          <div style={{ display: 'flex', fontFamily: 'Mono', fontSize: 18, letterSpacing: 2, color: colors.muted }}>
+            SOFTWARE, WOVEN STRIP BY STRIP
           </div>
         </div>
-
-        <div style={{ display: 'flex', width: 380, height: '100%', overflow: 'hidden', gap: 3 }}>
-          {cloth.map((strip, i) => (
-            <div
-              key={i}
-              style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: i % 2 ? -UNIT : 0 }}
-            >
-              {strip.map((cell, j) => (
-                <div
-                  key={j}
-                  style={{
-                    height: cell.units * UNIT,
-                    flexShrink: 0,
-                    background: THREADS[cellThread(cell, stripWarmth(i, STRIPS, 0, 1))],
-                    borderBottom: `3px solid ${colors.ink}`,
-                  }}
-                />
+        <div style={{ display: 'flex', width: WIDTH, height: HEIGHT, gap: GAP, overflow: 'hidden' }}>
+          {cloth.map((strip, s) => (
+            <div key={s} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              {strip.map((row, r) => (
+                <div key={r} style={{ display: 'flex', flexShrink: 0 }}>
+                  {row.map((fill, c) => (
+                    <div key={c} style={{ flex: 1, height: (WIDTH - GAP * (STRIPS - 1)) / STRIPS / COLS, background: fill }} />
+                  ))}
+                </div>
               ))}
             </div>
           ))}
@@ -91,7 +101,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
       width: 1200,
       height: 630,
       fonts: [
-        { name: 'Archivo', data: archivo, style: 'normal', weight: 800 },
+        { name: 'Serif', data: serif, style: 'normal', weight: 400 },
+        { name: 'Serif', data: serifItalic, style: 'italic', weight: 400 },
         { name: 'Mono', data: mono, style: 'normal', weight: 400 },
       ],
     }
