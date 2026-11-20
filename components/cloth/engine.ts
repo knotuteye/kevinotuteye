@@ -46,6 +46,7 @@ uniform int uStrips;
 uniform vec4 uStrip[${MAX_STRIPS}];
 uniform float uDrape;
 uniform float uDim;
+uniform vec4 uShadow;      // xy: offset (CSS px), z: blur (CSS px), w: strength
 uniform vec3 uDyes[8];
 uniform sampler2D uStruct;
 uniform sampler2D uColour;
@@ -138,6 +139,47 @@ vec3 shade(vec3 albedo, vec3 n, vec3 t, float ao, float gloss, vec2 css) {
   return c * ao;
 }
 
+// Cloth coordinates of a canvas point, without the drape or the dent.
+vec2 toCloth(vec2 q) {
+  vec2 c = q - uRes / uDpr * 0.5;
+  float ct = cos(uTilt), st = sin(uTilt);
+  c = vec2(ct * c.x - st * c.y, st * c.x + ct * c.y);
+  return c / uCam.z + uCam.xy;
+}
+
+// Distance, in threads, from a cloth point to a box (negative inside).
+float boxDist(vec2 p, vec2 lo, vec2 hi) {
+  vec2 d = max(lo - p, p - hi);
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+// The shadow the hanging cloth casts on the ground behind it: the woven
+// part solid, the bare warp, which is mostly gaps, much fainter.
+vec4 groundShadow(vec2 css) {
+  if (uShadow.w <= 0.0) return vec4(0.0);
+  vec2 p = toCloth(css - uShadow.xy);
+  float pitch = ENDS + uSeam;
+  float base = floor(p.x / pitch);
+  float blur = uShadow.z / uCam.z;
+  float a = 0.0;
+  for (int k = -1; k <= 1; k++) {
+    float s = base + float(k);
+    if (s < 0.0 || s >= float(uStrips)) continue;
+    vec4 st = uStrip[int(s)];
+    float x0 = s * pitch, x1 = x0 + ENDS;
+    float top = st.x + st.y, bottom = st.x + st.z;
+    float fringe = st.w > 0.0 ? 0.0 : 5.0;
+    float dc = boxDist(p, vec2(x0, top - fringe), vec2(x1, bottom + 5.0));
+    a = max(a, 1.0 - smoothstep(-blur * 0.6, blur, dc));
+    if (st.w > 0.0) {
+      float dw = boxDist(p, vec2(x0, top - st.w * 0.6), vec2(x1, top));
+      a = max(a, (1.0 - smoothstep(-blur * 0.6, blur, dw)) * 0.3);
+    }
+  }
+  a *= uShadow.w;
+  return vec4(vec3(0.2, 0.13, 0.05) * a, a);
+}
+
 void main() {
   vec2 css = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
   vec2 size = uRes / uDpr;
@@ -162,7 +204,7 @@ void main() {
   vec3 foldN = normalize(vec3(-grad * 2.4, 1.0));
 
   if (sIdx < 0.0 || sIdx >= float(uStrips) || lu >= ENDS) {
-    outColor = vec4(0.0);
+    outColor = groundShadow(css);
     return;
   }
 
@@ -295,7 +337,7 @@ void main() {
     col = shade(dye(st4.r * 255.0), n, t, ao, 1.0, css);
     alpha = cover * (1.0 - smoothstep(len - 1.0, len, hang));
   } else {
-    outColor = vec4(0.0);
+    outColor = groundShadow(css);
     return;
   }
 
@@ -333,6 +375,8 @@ export type ClothParams = {
   seam: number
   drape: number
   dim: number
+  /** Shadow cast on the ground: offset and blur in CSS px, strength 0..1. */
+  shadow: { x: number; y: number; blur: number; strength: number }
 }
 
 export const DEFAULT_PARAMS: ClothParams = {
@@ -348,6 +392,7 @@ export const DEFAULT_PARAMS: ClothParams = {
   seam: 0,
   drape: 1,
   dim: 1,
+  shadow: { x: 14, y: 26, blur: 30, strength: 0 },
 }
 
 export type ClothRenderer = {
@@ -447,6 +492,7 @@ export function createClothRenderer(
     strip: loc('uStrip'),
     drape: loc('uDrape'),
     dim: loc('uDim'),
+    shadow: loc('uShadow'),
   }
   gl.uniform1i(loc('uStruct'), 0)
   gl.uniform1i(loc('uColour'), 1)
@@ -503,6 +549,7 @@ export function createClothRenderer(
       gl.uniform4fv(U.strip, stripData)
       gl.uniform1f(U.drape, p.drape)
       gl.uniform1f(U.dim, p.dim)
+      gl.uniform4f(U.shadow, p.shadow.x, p.shadow.y, p.shadow.blur, p.shadow.strength)
       gl.clearColor(0, 0, 0, 0)
       gl.clear(gl.COLOR_BUFFER_BIT)
       gl.drawArrays(gl.TRIANGLES, 0, 3)

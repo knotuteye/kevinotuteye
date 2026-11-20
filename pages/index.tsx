@@ -1,3 +1,4 @@
+import Intro from '../components/home/Intro'
 import LoomStory from '../components/home/LoomStory'
 import Route from '../components/home/Route'
 import SelectedWork from '../components/home/SelectedWork'
@@ -9,6 +10,7 @@ const Home: Page = () => (
   <>
     <Seo path="/" />
     <LoomStory />
+    <Intro />
     <SelectedWork />
     <Weights />
     <Route />
