@@ -131,6 +131,68 @@ export function warpEnds(draft: StripDraft): Dye[] {
   return [...half, ...half.slice().reverse()]
 }
 
+/* ------------------------------------------------------------------ */
+/* Lettering                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Commemorative kente often carries words: names, places, a date, woven in
+ * as weft-faced blocks of blocky capitals. Each letter here is one end wide
+ * per column and one pick tall per row, so strokes are single threads and the
+ * whole of OTUTEYE fits across one 48-end strip. Only the letters the site
+ * needs are drawn; anything else weaves as a gap.
+ */
+const GLYPHS: Record<string, string[]> = {
+  K: ['#...#', '#..#.', '#..#.', '#.#..', '#.#..', '##...', '#.#..', '#.#..', '#..#.', '#..#.', '#...#'],
+  E: ['#####', '#....', '#....', '#....', '#....', '####.', '#....', '#....', '#....', '#....', '#####'],
+  V: ['#...#', '#...#', '#...#', '#...#', '.#.#.', '.#.#.', '.#.#.', '.#.#.', '..#..', '..#..', '..#..'],
+  I: ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '.#.', '.#.', '.#.', '.#.', '###'],
+  N: ['#...#', '##..#', '##..#', '##..#', '#.#.#', '#.#.#', '#.#.#', '#..##', '#..##', '#..##', '#...#'],
+  O: ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  T: ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
+  U: ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.'],
+  Y: ['#...#', '#...#', '#...#', '.#.#.', '.#.#.', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..'],
+  ' ': ['...', '...', '...', '...', '...', '...', '...', '...', '...', '...', '...'],
+}
+const GLYPH_ROWS = 11
+
+/**
+ * Picks for a block of woven lettering, top to bottom, each `ENDS` wide:
+ * a framed weft-faced panel with one line of capitals per entry in `lines`.
+ */
+export function wovenText(
+  lines: string[],
+  { ink = Dye.Gold, ground = Dye.Black, frame = Dye.Blue }: { ink?: Dye; ground?: Dye; frame?: Dye } = {}
+): Dye[][] {
+  const blank = (): Dye[] => Array(ENDS).fill(ground)
+  const bar = (): Dye[] => Array(ENDS).fill(frame)
+  const rows: Dye[][] = [bar(), bar(), blank(), blank()]
+  lines.forEach((line, l) => {
+    const glyphs = Array.from(line.toUpperCase()).map((ch) => GLYPHS[ch] ?? GLYPHS[' '])
+    const width = glyphs.reduce((sum, g) => sum + g[0].length, 0) + glyphs.length - 1
+    const left = Math.floor((ENDS - width) / 2)
+    for (let r = 0; r < GLYPH_ROWS; r++) {
+      const row = blank()
+      let x = left
+      for (const g of glyphs) {
+        for (let c = 0; c < g[r].length; c++) if (g[r][c] === '#' && x + c >= 0 && x + c < ENDS) row[x + c] = ink
+        x += g[r].length + 1
+      }
+      rows.push(row)
+    }
+    if (l < lines.length - 1) rows.push(blank(), blank(), blank())
+  })
+  rows.push(blank(), blank(), bar(), bar())
+  return rows
+}
+
+/**
+ * Picks woven into one strip in place of its pattern. They fill the last
+ * `rows.length` rows of the repeat, so a strip whose fell starts at pick 0
+ * weaves them next, bottom row first.
+ */
+export type Inlay = { strip: number; rows: Dye[][] }
+
 export type CompiledCloth = {
   strips: number
   /** RGBA: warp dye, weft dye, 255 when the weft is on top, block id. */
@@ -150,7 +212,7 @@ function rgb(hex: string): [number, number, number] {
  * Lays the strips side by side into one texture, `strips * ENDS` wide and
  * PERIOD tall. Odd strips start half a unit later: the checkerboard offset.
  */
-export function compileCloth(drafts: StripDraft[]): CompiledCloth {
+export function compileCloth(drafts: StripDraft[], inlay?: Inlay): CompiledCloth {
   const width = drafts.length * ENDS
   const height = PERIOD
   const structure = new Uint8Array(width * height * 4)
@@ -165,11 +227,12 @@ export function compileCloth(drafts: StripDraft[]): CompiledCloth {
       const unit = Math.floor(pick / UNIT)
       const inUnit = pick % UNIT
       const block = draft.blocks[unit % draft.blocks.length]
-      const weftFaced = inUnit >= WARP_PICKS
+      const inlaid = inlay?.strip === s ? inlay.rows[row - (height - inlay.rows.length)] : undefined
+      const weftFaced = inlaid !== undefined || inUnit >= WARP_PICKS
       for (let x = 0; x < ENDS; x++) {
         const o = (row * width + s * ENDS + x) * 4
         const warp = ends[x]
-        const weft = weftFaced ? motifAt(block, x, inUnit - WARP_PICKS) : draft.weft
+        const weft = inlaid ? inlaid[x] : weftFaced ? motifAt(block, x, inUnit - WARP_PICKS) : draft.weft
         structure[o] = warp
         structure[o + 1] = weft
         structure[o + 2] = weftFaced ? 255 : 0

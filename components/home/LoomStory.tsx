@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react'
 import { chapters, clothPatterns, shortDate } from '../../lib/content'
-import { ENDS } from '../../lib/kente'
+import { DYES, ENDS, wovenText, type Inlay } from '../../lib/kente'
 import { clamp, easeInOut, easeOut, lerp, range, useReducedMotion } from '../../lib/motion'
 import { clack, swish } from '../../lib/sound'
 import Cloth, { type FrameFn } from '../cloth/Cloth'
 import ClothFallback from '../cloth/Fallback'
 import Link from '../Link'
-import { Arrow, Reveal, Woven } from '../Reveal'
+import { Arrow, Reveal } from '../Reveal'
 
 const pad = (n: number, w = 2) => String(n).padStart(w, '0')
 
@@ -14,13 +14,57 @@ const pad = (n: number, w = 2) => String(n).padStart(w, '0')
 const PIN = 5.2
 const SEAM = 6
 
+/** The name, woven into the strip on the loom in place of its pattern. */
+const NAME_LINES = ['Kevin', 'Otuteye']
+const NAME_ROWS = wovenText(NAME_LINES)
+const NAME_INLAY: Inlay = { strip: clothPatterns.length - 1, rows: NAME_ROWS }
+/** Picks from the start to the weaver's rest: the name, and a few above it. */
+const NAME_SPAN = NAME_ROWS.length + 3
+/**
+ * Arrival, in seconds: the warp is strung (0 to WARP_IN), the name is woven
+ * (from INTRO_DELAY for INTRO), then the annotations draw in (from NOTES_AT).
+ */
+const WARP_IN = 0.9
+const INTRO_DELAY = 0.75
+const INTRO = 3.4
+const NOTES_AT = INTRO_DELAY + INTRO - 0.3
+/** After that the weaver works on slowly while there is room below the name. */
+const IDLE_RATE = 0.45
+/** The least bare warp shown above the fell in the hero, in picks. */
+const HERO_WARP = 12
+/** Picks the scroll weaves over the whole story; scrolling back unweaves them. */
+const STORY_PICKS = 140
+
+/**
+ * The hero is drawn as a plate: the loom as Fig. 1, its parts labelled with
+ * hairline leaders that track the live geometry. Only where there is room
+ * beside the strip; on narrow screens the loom stands alone.
+ */
+type NoteId = 'warp' | 'reed' | 'fell' | 'inlay' | 'strip'
+type Note = { id: NoteId; side: 'left' | 'right'; title: string; text: string }
+const current = chapters[chapters.length - 1]
+const NOTES: Note[] = [
+  { id: 'warp', side: 'left', title: 'Warp', text: `${ENDS} ends, strung and waiting` },
+  { id: 'reed', side: 'right', title: 'Reed', text: 'Beats each pick into the fell' },
+  { id: 'fell', side: 'left', title: 'Fell', text: 'Pick 0001 · shuttle left to right' },
+  { id: 'inlay', side: 'right', title: 'Inlay', text: `The name, in ${NAME_ROWS.length} weft-faced picks` },
+  {
+    id: 'strip',
+    side: 'left',
+    title: `Strip ${String(clothPatterns.length).padStart(2, '0')}`,
+    text: current ? `After ${current.strip.name} · ${current.company}, since ${shortDate(current.start)}` : '',
+  },
+]
+const NOTE_WIDTH = 230
+
 /**
  * The opening of the site, one pinned canvas.
  *
  * It starts close on the current chapter's strip, still on the loom: bare warp
- * above, cloth below, the shuttle laying one pick at a time. The name is woven
- * into it, the first line behind the warp and the second over the cloth.
- * Scrolling pulls back: the seven finished strips arrive, newest first, as if
+ * above, cloth below, the shuttle laying one pick at a time. The first picks
+ * it lays spell the name, the way commemorative kente carries words. Weaving
+ * follows the scroll both ways, so the top of the page always shows the name
+ * as it was finished. Scrolling pulls back: the seven finished strips arrive, newest first, as if
  * going back in time; then they are sewn edge to edge into one cloth, with the
  * last strip still being woven.
  */
@@ -30,12 +74,15 @@ export default function LoomStory() {
   const captions = useRef<(HTMLDivElement | null)[]>([])
   const labels = useRef<(HTMLLIElement | null)[]>([])
   const finale = useRef<HTMLDivElement>(null)
-  const counter = useRef<HTMLSpanElement>(null)
+  const notesLayer = useRef<HTMLDivElement>(null)
+  const noteLines = useRef<(SVGPolylineElement | null)[]>([])
+  const noteDots = useRef<(SVGCircleElement | null)[]>([])
+  const noteLabels = useRef<(HTMLDivElement | null)[]>([])
+  const shuttleText = useRef<HTMLSpanElement>(null)
   const reduced = useReducedMotion()
-  const weave = useRef({ picks: 0, lastScroll: 0, boost: 0, lastPick: -1 })
+  const weave = useRef({ picks: 0, idle: 0, lastPick: -1, lastClack: 0, shuttleNote: '' })
 
   const n = clothPatterns.length
-  const current = chapters[n - 1]
 
   const frame = useCallback<FrameFn>(
     (p, ctx) => {
@@ -45,26 +92,46 @@ export default function LoomStory() {
       const rect = el.getBoundingClientRect()
       const P = ctx.reduced ? 0 : clamp(-rect.top / Math.max(1, rect.height - window.innerHeight))
 
-      // Weaving: steady, and faster while the visitor scrolls the hero.
+      // Camera: from the strip on the loom to the whole cloth, zooming in log space.
+      // The hero is the loom alone, centred, sized so the woven name fits
+      // below the fell with room left to keep weaving.
+      const narrow = W < 768
+      const heroScale = narrow
+        ? Math.min((W * 0.9) / ENDS, (H * 0.48) / NAME_SPAN)
+        : Math.min(clamp(W * 0.42, 320, 720) / ENDS, (H * 0.56) / NAME_SPAN)
+      // Leave room under the header for the beater and some bare warp.
+      const heroFell = Math.max(narrow ? 0.27 : 0.25, (88 + HERO_WARP * heroScale) / H)
+
+      // Weaving: the name first, quickly; then slowly, until the next pick
+      // would push the name out of view; plus whatever the scroll adds.
       const w = weave.current
-      const scrollY = window.scrollY
-      w.boost = Math.max(w.boost * Math.pow(0.04, ctx.dt), Math.min(6, Math.abs(scrollY - w.lastScroll) * 0.06))
-      w.lastScroll = scrollY
-      if (!ctx.reduced) w.picks += ctx.dt * (1.15 + w.boost * (1 - range(P, 0.2, 0.5)))
-      const pick = Math.floor(w.picks + 0.1)
-      const phase = w.picks - Math.floor(w.picks)
-      if (pick !== w.lastPick) {
-        if (w.lastPick >= 0 && P < 0.7) {
-          clack(1 - P)
-          setTimeout(() => swish(0.45 * (1 - P)), 140)
+      const introT = ctx.reduced ? 1 : range(ctx.time, INTRO_DELAY, INTRO_DELAY + INTRO)
+      const room = 0.86 * H - (heroFell * H + NAME_SPAN * heroScale)
+      const idleMax = Math.max(0, Math.floor(room / heroScale))
+      if (introT >= 1 && !ctx.reduced) w.idle = Math.min(idleMax, w.idle + ctx.dt * IDLE_RATE)
+      else w.idle = Math.min(w.idle, idleMax)
+      const goal = NAME_SPAN * easeInOut(introT) + w.idle + Math.round(P * STORY_PICKS)
+      w.picks = ctx.reduced ? goal : w.picks + (goal - w.picks) * (1 - Math.pow(0.002, ctx.dt))
+      if (Math.abs(goal - w.picks) < 0.002) w.picks = goal
+      // A pick joins the cloth only once its whole cycle is done: shuttle
+      // across (0..0.7), beater in (0.74..0.9) and back. Counting it any
+      // earlier flips the shuttle while the beater is still out, so the next
+      // row flashes up fully laid and then vanishes. The clack is on the strike.
+      const pick = Math.floor(w.picks)
+      const phase = w.picks - pick
+      const strike = Math.floor(w.picks + 0.1)
+      if (strike !== w.lastPick) {
+        if (w.lastPick >= 0) {
+          const now = performance.now()
+          if (P < 0.7 && now - w.lastClack > 90) {
+            w.lastClack = now
+            clack(1 - P)
+            setTimeout(() => swish(0.45 * (1 - P)), 140)
+          }
         }
-        w.lastPick = pick
-        if (counter.current) counter.current.textContent = pad(pick, 4)
+        w.lastPick = strike
       }
 
-      // Camera: from the strip on the loom to the whole cloth, zooming in log space.
-      const narrow = W < 768
-      const heroScale = (narrow ? W * 0.56 : clamp(W * 0.27, 280, 460)) / ENDS
       const clothWidth = (seam: number) => n * ENDS + (n - 1) * seam
       const fitScale = Math.min((W * (narrow ? 0.94 : 0.84)) / clothWidth(SEAM), (H * 0.9) / 260)
       const zoom = easeInOut(range(P, 0.04, 0.46))
@@ -75,15 +142,15 @@ export default function LoomStory() {
       const lastX = (n - 1) * (ENDS + seam) + ENDS / 2
       p.seam = seam
       p.cam.scale = scale
-      // In the hero the strip stands right of the introduction (or under it on
-      // a phone); the offset unwinds as the camera pulls back.
-      const heroShift = narrow ? 0 : (W * 0.22) / scale
-      p.cam.x = lerp(lastX - heroShift, clothWidth(seam) / 2, zoom)
-      const fellAt = lerp(narrow ? 0.86 : 0.44, 0.3, zoom) - push * 0.22
+      p.cam.x = lerp(lastX, clothWidth(seam) / 2, zoom)
+      const fellAt = lerp(heroFell, 0.3, zoom) - push * 0.22
       p.cam.y = (0.5 - fellAt) * (H / scale)
       p.tilt = lerp(0, -0.06, push)
       p.dim = lerp(1, 0.5, push)
       p.drape = lerp(0.5, 1.1, zoom)
+      p.shadow.strength = lerp(0.34, 0.22, zoom) * (1 - push * 0.6)
+      // Arrival: the warp is strung before the first pick.
+      const warpIn = ctx.reduced ? 1 : easeOut(range(ctx.time, 0, WARP_IN))
 
       // Strips. World y = 0 is the top of the cloth; the last strip's fell sits
       // there too, and its woven cloth flows down as picks are added.
@@ -92,8 +159,8 @@ export default function LoomStory() {
       const below = (H / fitScale) * 0.7 + 40
       p.strips = clothPatterns.map((_, k) => {
         if (k === n - 1) {
-          const woven = Math.floor(w.picks + 0.1)
-          return { slide: w.picks, top: -woven, bottom: length - w.picks, warp: (H * (narrow ? 0.14 : 0.3)) / scale }
+          const woven = pick
+          return { slide: w.picks, top: -woven, bottom: length - w.picks, warp: Math.max(0.5, Math.max((H * (narrow ? 0.15 : 0.16)) / scale, HERO_WARP) * warpIn) }
         }
         const order = n - 2 - k // newest first
         const a = easeOut(range(P, 0.08 + order * 0.04, 0.2 + order * 0.04))
@@ -109,6 +176,74 @@ export default function LoomStory() {
 
       // DOM layers, written directly: this runs every frame.
       const heroOut = range(P, 0.01, 0.07)
+
+      // The plate's annotations, pinned to the parts they name.
+      const notes = notesLayer.current
+      if (notes) {
+        const toX = (x: number) => (x - p.cam.x) * scale + W / 2
+        const toY = (y: number) => (y - p.cam.y) * scale + H / 2
+        const x0 = (n - 1) * (ENDS + seam)
+        const left = toX(x0)
+        const right = toX(x0 + ENDS)
+        const gap = clamp(W * 0.045, 40, 96)
+        const room = left - gap - 14 - NOTE_WIDTH >= 20
+        const shown = !narrow && room && heroOut < 1
+        notes.style.visibility = shown ? 'visible' : 'hidden'
+        notes.style.opacity = String(1 - heroOut)
+        if (shown) {
+          const strip = p.strips[n - 1]
+          const fell = strip.slide + strip.top
+          const rows = NAME_ROWS.length
+          // Labels hold still where the parts rest; leaders follow the parts.
+          const restFell = heroFell * H
+          const targets: Record<NoteId, { label: number; x: number; y: number }> = {
+            warp: { label: restFell - 4.6 * scale, x: left + 3.5 * scale, y: restFell - 4.6 * scale },
+            reed: { label: restFell - 8.8 * scale, x: right - 3 * scale, y: toY(fell - p.beat - 0.8) },
+            fell: { label: restFell + 26, x: left + 2.5 * scale, y: toY(fell) },
+            inlay: {
+              label: restFell + (NAME_SPAN - rows / 2) * scale,
+              x: right - 2.5 * scale,
+              y: toY(Math.max(fell + 1, w.picks - rows / 2)),
+            },
+            strip: {
+              label: Math.min(H - 150, restFell + (NAME_SPAN + 6) * scale),
+              x: left + 4 * scale,
+              y: Math.min(H - 150, restFell + (NAME_SPAN + 6) * scale) + 24,
+            },
+          }
+          NOTES.forEach((note, i) => {
+            const t = targets[note.id]
+            const isLeft = note.side === 'left'
+            const start = isLeft ? left - gap : right + gap
+            const elbow = isLeft ? left - 12 : right + 12
+            const tx = isLeft ? Math.max(t.x, elbow + 4) : Math.min(t.x, elbow - 4)
+            const tIn = ctx.reduced ? 1 : easeOut(range(ctx.time, NOTES_AT + i * 0.14, NOTES_AT + i * 0.14 + 0.9))
+            const line = noteLines.current[i]
+            if (line) {
+              line.setAttribute('points', `${start},${t.label} ${elbow},${t.label} ${tx},${t.y}`)
+              line.style.strokeDashoffset = String(1 - tIn)
+            }
+            const dot = noteDots.current[i]
+            if (dot) {
+              dot.setAttribute('cx', String(tx))
+              dot.setAttribute('cy', String(t.y))
+              dot.style.opacity = String(range(tIn, 0.8, 1))
+            }
+            const label = noteLabels.current[i]
+            if (label) {
+              const lx = isLeft ? start - 14 - NOTE_WIDTH : start + 14
+              label.style.transform = `translate3d(${lx}px, ${t.label}px, 0) translateY(-50%)`
+              label.style.opacity = String(range(tIn, 0.3, 1))
+            }
+          })
+          const text = `Pick ${pad(pick + 1, 4)} · shuttle ${p.shuttle.dir > 0 ? 'left to right' : 'right to left'}`
+          if (text !== w.shuttleNote && shuttleText.current) {
+            w.shuttleNote = text
+            shuttleText.current.textContent = text
+          }
+        }
+      }
+
       for (const layer of [heroOver.current]) {
         if (!layer) continue
         layer.style.opacity = String(1 - heroOut)
@@ -158,61 +293,95 @@ export default function LoomStory() {
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <Cloth
           patterns={clothPatterns}
+          inlay={NAME_INLAY}
           frame={frame}
           maxDpr={1.5}
           className="absolute inset-0 z-20"
           fallback={
-            <div className="absolute inset-y-0 left-[22%] w-[56vw] opacity-60 md:left-[58%] md:w-[27vw] md:min-w-[240px]">
+            <div className="absolute bottom-0 left-[5%] top-[12%] w-[90vw] opacity-60 md:left-[29%] md:top-[9%] md:w-[42vw] md:min-w-[320px]">
               <ClothFallback patterns={clothPatterns.slice(-1)} />
             </div>
           }
+          unsupported={<NameFallback />}
         />
 
-        {/* The introduction sits on bare cotton beside the loom, never over the
-            cloth, so the light that follows the pointer cannot wash it out. */}
-        <div ref={heroOver} className="pointer-events-none absolute inset-0 z-30 will-change-transform">
-          <div className="gutter mx-auto flex h-full max-w-page flex-col pt-[13svh] md:pt-[max(120px,17svh)]">
-            <div className="pointer-events-auto max-w-[620px] md:max-w-[min(640px,48vw)]">
-              <Reveal as="p" immediate delay={150} className="t-label text-accent">
-                AI + health tech engineer · Accra, Ghana · Remote
-              </Reveal>
-              <Woven
-                as="h1"
-                id="hero-title"
-                immediate
-                delay={250}
-                className="t-display mt-5 text-[clamp(64px,9vw,172px)] md:mt-7"
-                lines={['Kevin', [{ text: 'Otuteye', italic: true, className: 'text-accent' }]]}
-              />
-              <Reveal as="p" immediate delay={700} className="mt-6 max-w-[520px] text-[17px] leading-[1.5] text-soft md:mt-9 md:text-[19px]">
-                I build healthcare software that clinicians can trust and patients keep using: AI features in
-                production, auditable clinical workflows, and the HIPAA-compliant platform under them, at 99.99% uptime.
-              </Reveal>
-              <Reveal immediate delay={850} className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-3 md:mt-10">
-                <Link
-                  href="/work"
-                  className="group t-label inline-flex min-h-[48px] items-center gap-4 rounded-full bg-fg px-6 text-ground transition-colors hover:bg-accent"
-                >
-                  See the work
-                  <Arrow className="h-3 w-5 transition-transform duration-500 group-hover:translate-x-1" />
-                </Link>
-                <Link href="/blog" className="t-label link-underline py-3 text-fg">
-                  Read the writing
-                </Link>
-              </Reveal>
+        {/* Fig. 1: the loom, its parts labelled. Leaders and labels are placed
+            every frame from the loom's own geometry. Decorative: the parts
+            are not content, and the shuttle note changes several times a
+            second, so all of it is hidden from assistive tech. */}
+        <div ref={notesLayer} aria-hidden="true" className="pointer-events-none absolute inset-0 z-30" style={{ visibility: 'hidden' }}>
+          <svg className="absolute inset-0 h-full w-full overflow-visible text-fg">
+            {NOTES.map((note, i) => (
+              <g key={note.id}>
+                <polyline
+                  ref={(node) => {
+                    noteLines.current[i] = node
+                  }}
+                  pathLength={1}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeOpacity={0.45}
+                  strokeWidth={1}
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeDasharray: 1, strokeDashoffset: 1 }}
+                />
+                <circle
+                  ref={(node) => {
+                    noteDots.current[i] = node
+                  }}
+                  r={3.5}
+                  className="fill-ground"
+                  stroke="currentColor"
+                  strokeWidth={1.25}
+                  style={{ opacity: 0 }}
+                />
+              </g>
+            ))}
+          </svg>
+          {NOTES.map((note, i) => (
+            <div
+              key={note.id}
+              ref={(node) => {
+                noteLabels.current[i] = node
+              }}
+              className={`absolute left-0 top-0 ${note.side === 'left' ? 'text-right' : 'text-left'}`}
+              style={{ width: NOTE_WIDTH, opacity: 0 }}
+            >
+              <p className="t-label text-[10px] text-muted">
+                <span className="text-accent">{pad(i + 1)}</span> · {note.title}
+              </p>
+              <p className="mt-1 font-serif text-[17px] leading-[1.2] text-fg">
+                {note.id === 'fell' ? <span ref={shuttleText}>{note.text}</span> : note.text}
+              </p>
             </div>
-            <Reveal immediate delay={1100} className="t-label mt-auto hidden flex-col gap-1 pb-8 text-muted md:flex">
-              <span>
-                Strip {pad(n)}, after {current?.strip.name} · {current?.company}, on the loom since{' '}
-                {current ? shortDate(current.start) : ''}
-              </span>
-              <span>
-                Picks woven since you arrived <span ref={counter} className="text-accent">0000</span>
-              </span>
-              <span className="mt-3 inline-flex items-center gap-3 text-fg">
-                Scroll to weave
-                <span className="inline-block h-px w-10 origin-left animate-[thread_2.4s_ease-in-out_infinite] bg-accent" aria-hidden="true" />
-              </span>
+          ))}
+        </div>
+
+        {/* The name is woven into the cloth, which is hidden from assistive
+            tech, so the heading carries it in text; the introduction follows
+            the story, in components/home/Intro. */}
+        <div ref={heroOver} className="pointer-events-none absolute inset-x-0 bottom-0 z-30">
+          <h1 id="hero-title" className="sr-only">
+            {NAME_LINES.join(' ')}
+          </h1>
+          <div className="gutter mx-auto grid max-w-page grid-cols-[1fr_auto_1fr] items-center gap-6 pb-[max(20px,3.5svh)]">
+            <Reveal immediate delay={(NOTES_AT + 0.6) * 1000} className="t-label hidden text-[10px] text-muted lg:block">
+              Fig. 1 · The loom, still weaving
+            </Reveal>
+            <Reveal
+              immediate
+              delay={(INTRO_DELAY + INTRO) * 1000}
+              className="t-label col-start-2 inline-flex items-center gap-3 rounded-full bg-ground/80 px-4 py-2 text-fg backdrop-blur-sm"
+            >
+              Scroll to weave
+              <span className="inline-block h-px w-10 origin-left animate-[thread_2.4s_ease-in-out_infinite] bg-accent" aria-hidden="true" />
+            </Reveal>
+            <Reveal
+              immediate
+              delay={(NOTES_AT + 0.8) * 1000}
+              className="t-label hidden justify-self-end text-[10px] text-muted lg:block [@media(pointer:coarse)]:!hidden"
+            >
+              Hover the cloth · press to dent it
             </Reveal>
           </div>
         </div>
@@ -293,5 +462,21 @@ export default function LoomStory() {
         </div>
       </div>
     </section>
+  )
+}
+
+/**
+ * Without WebGL2 there is no loom, so the name is drawn as the same picks,
+ * flat, where the loom would have woven it.
+ */
+function NameFallback() {
+  return (
+    <div className="absolute left-[5%] top-[27%] w-[90vw] md:left-[29%] md:top-[25%] md:w-[42vw] md:min-w-[320px]">
+      <svg viewBox={`0 0 ${ENDS} ${NAME_ROWS.length}`} className="block h-auto w-full" shapeRendering="crispEdges">
+        {NAME_ROWS.flatMap((row, y) =>
+          row.map((dye, x) => <rect key={`${x}-${y}`} x={x} y={y} width={1.02} height={1.02} fill={DYES[dye]} />)
+        )}
+      </svg>
+    </div>
   )
 }

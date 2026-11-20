@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { compileCloth, PATTERNS, type PatternId } from '../../lib/kente'
+import { compileCloth, PATTERNS, type Inlay, type PatternId } from '../../lib/kente'
 import { prefersReducedMotion } from '../../lib/motion'
 import {
   createClothRenderer,
@@ -30,6 +30,10 @@ type Props = {
   className?: string
   /** Shown until the first frame lands, and kept if WebGL2 is missing. */
   fallback?: ReactNode
+  /** Shown over the fallback only when WebGL2 is missing. */
+  unsupported?: ReactNode
+  /** Picks woven into one strip in place of its pattern. Keep it stable. */
+  inlay?: Inlay
   /** The press of the pointer dents the cloth. */
   pressable?: boolean
   maxDpr?: number
@@ -49,6 +53,8 @@ export default function Cloth({
   frame,
   className = '',
   fallback = null,
+  unsupported = null,
+  inlay,
   pressable = true,
   maxDpr = 2,
   version,
@@ -58,10 +64,11 @@ export default function Cloth({
   const frameRef = useRef(frame)
   const kick = useRef<() => void>(() => {})
   const [drawn, setDrawn] = useState(false)
+  const [failed, setFailed] = useState(false)
   const key = patterns.join(',')
   const cloth = useMemo(
-    () => compileCloth(key.split(',').map((id) => PATTERNS[id as PatternId])),
-    [key]
+    () => compileCloth(key.split(',').map((id) => PATTERNS[id as PatternId]), inlay),
+    [key, inlay]
   )
 
   useEffect(() => {
@@ -160,7 +167,10 @@ export default function Cloth({
         console.warn('[loom]', error)
         renderer = null
       }
-      if (!renderer) return
+      if (!renderer) {
+        setFailed(true)
+        return
+      }
       resizeObserver.observe(cv)
     }
 
@@ -246,6 +256,7 @@ export default function Cloth({
           {fallback}
         </div>
       ) : null}
+      {failed ? unsupported : null}
       <canvas
         ref={canvas}
         className="absolute inset-0 h-full w-full transition-opacity duration-700"
