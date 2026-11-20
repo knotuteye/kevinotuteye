@@ -2,45 +2,233 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+  :root {
+    --ease-loom: cubic-bezier(0.7, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0.2, 0.7, 0.1, 1);
+    color-scheme: dark;
+  }
+
+  html {
+    background: theme('colors.ink');
+    color: theme('colors.cotton');
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    font-family: theme('fontFamily.sans');
+  }
+
+  ::selection {
+    background: theme('colors.gold');
+    color: theme('colors.ink');
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.gold');
+    outline-offset: 3px;
+  }
+
+  .theme-cotton :focus-visible {
+    outline-color: theme('colors.indigo');
+  }
+
+  .theme-cotton ::selection {
+    background: theme('colors.indigo');
+    color: theme('colors.cotton');
+  }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* ------------------------------------------------------------------ */
+/* Type                                                                */
+/* ------------------------------------------------------------------ */
+
+@layer components {
+  /* Archivo at its narrowest: tight like a strip at rest. */
+  .t-display {
+    font-family: theme('fontFamily.display');
+    font-weight: 800;
+    font-variation-settings: 'wdth' 62.5;
+    text-transform: uppercase;
+    line-height: 0.84;
+    letter-spacing: -0.01em;
+  }
+
+  .t-sub {
+    font-family: theme('fontFamily.display');
+    font-weight: 700;
+    font-variation-settings: 'wdth' 62.5;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .t-label {
+    font-family: theme('fontFamily.mono');
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Stretching the cloth: the width axis opens up on hover and focus. */
+  .stretch {
+    transition: font-variation-settings 400ms var(--ease-loom);
+  }
+  .group:hover .stretch,
+  .group:focus-visible .stretch,
+  .stretch:hover {
+    font-variation-settings: 'wdth' 100;
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 400ms var(--ease-loom);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible,
+  .link-underline[aria-current='page'] {
+    background-size: 100% 1px;
+  }
 }
 
-* {
-  box-sizing: border-box;
+/* ------------------------------------------------------------------ */
+/* Reveal on scroll. Only hidden when JS is running (html.js), so the  */
+/* content is always there for crawlers and no-JS visitors.            */
+/* ------------------------------------------------------------------ */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms var(--ease-out),
+    transform 900ms var(--ease-out);
+  transition-delay: var(--delay, 0ms);
+}
+.js .reveal.is-in {
+  opacity: 1;
+  transform: none;
 }
 
-::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  background-color: #f5f5f5;
+.lines > span {
+  display: block;
+  overflow: hidden;
+  /* Room for descenders and the tight line-height. */
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+.lines > span > span {
+  display: block;
+}
+.js .lines > span > span {
+  transform: translateY(105%);
+  transition: transform 900ms var(--ease-out);
+  transition-delay: calc(var(--line, 0) * 80ms + var(--delay, 0ms));
+}
+.js .lines.is-in > span > span {
+  transform: none;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  background-color: #f5f5f5;
+/* ------------------------------------------------------------------ */
+/* The loom (components/Loom.tsx, lib/loom.ts)                         */
+/* ------------------------------------------------------------------ */
+
+.loom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: #90be6d;
-  background-image: -webkit-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.2) 25%,
-    transparent 25%,
-    transparent 50%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.2) 75%,
-    transparent 75%,
-    transparent
-  );
-  border-radius: 5rem;
+.loom-strip {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: theme('colors.ink');
+  border-left: 2px solid theme('colors.ink');
+  transform: translateY(var(--from));
+  will-change: transform;
+}
+
+.loom[data-phase='idle'] {
+  visibility: hidden;
+}
+.loom[data-phase='idle'] .loom-strip {
+  transition: none;
+}
+
+.loom[data-phase='cover'] {
+  pointer-events: auto;
+}
+.loom[data-phase='cover'] .loom-strip {
+  transform: none;
+  transition: transform 450ms var(--ease-loom) calc(var(--i) * 18ms);
+}
+
+.loom[data-phase='reveal'] .loom-strip {
+  transform: translateY(var(--to));
+  transition: transform 450ms var(--ease-loom) calc(var(--i) * 18ms);
+}
+
+.loom[data-phase='intro'] .loom-strip {
+  transform: none;
+  animation: loom-lift 450ms var(--ease-loom) calc(450ms + var(--i) * 18ms) forwards;
+}
+
+@keyframes loom-lift {
+  to {
+    transform: translateY(var(--to));
+  }
+}
+
+@media (max-width: 1023px) {
+  .loom-strip:nth-child(n + 13) {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .loom-strip:nth-child(n + 9) {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion: no cloth, no travel. A short fade between pages.    */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .loom {
+    display: none;
+  }
+  .js .reveal,
+  .js .lines > span > span {
+    transform: none;
+    transition: opacity 200ms linear;
+  }
+  .stretch,
+  .link-underline {
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }

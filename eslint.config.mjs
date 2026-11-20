@@ -12,23 +12,6 @@ export default defineConfig([
   ...nextTs,
 
   {
-    /**
-     * The scene graph is mutable on purpose.
-     *
-     * `react-hooks/immutability` assumes React owns every value a component
-     * touches, which is true of state and false of a three.js object: the
-     * canonical react-three-fiber frame loop writes positions, uniforms and
-     * material opacities straight onto objects that were memoised at mount,
-     * precisely so those writes never reach React. Rewriting that to satisfy
-     * the rule would mean a re-render per frame — the exact cost the pattern
-     * exists to avoid — so the rule is off for the world and left on
-     * everywhere else, where it is right.
-     */
-    files: ['components/three/**/*.{ts,tsx}'],
-    rules: { 'react-hooks/immutability': 'off' },
-  },
-
-  {
     // Tailwind and PostCSS read their configs through `require`.
     files: ['*.config.js', 'Theme.js'],
     rules: { '@typescript-eslint/no-require-imports': 'off' },
@@ -41,6 +24,5 @@ export default defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
-    'public/draco/**',
   ]),
 ])

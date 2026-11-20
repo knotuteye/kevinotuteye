@@ -1,0 +1,104 @@
+{
+  "_comment": "Extra material for project pages, keyed by project slug (see lib/content.ts). Everything here is optional: a project without an entry still gets a page built from its `about` text. `metric` appears on project rows; `title` is a shorter name for rows (the page keeps the full one); `headline` replaces the title on the case study; `sections` replace the single paragraph. `featured` sets the home page order.",
+  "featured": [
+    "kronos",
+    "retainmd-clinician-portal-emr",
+    "shared-serverless-platform-fda-compliance-pipeline",
+    "retainyourbrain",
+    "warehouse-digitization"
+  ],
+  "studies": {
+    "kronos": {
+      "metric": {
+        "value": "10 min",
+        "label": "down from 2 months"
+      },
+      "headline": {
+        "from": "2 months",
+        "to": "10 minutes"
+      },
+      "summary": "A greedy scheduler that turned an NP-hard timetabling problem into a ten-minute job. The College of Engineering at KNUST adopted it as its official scheduling tool.",
+      "sections": [
+        {
+          "title": "The problem",
+          "body": "Lecture timetables for the College of Engineering were built by hand, and each one took about two months. Timetabling is NP-hard, so there is no fast way to find a perfect answer."
+        },
+        {
+          "title": "The approach",
+          "body": "A greedy algorithm that weighs soft constraints, including how comfortable a schedule is for lecturers and students and how far apart lecture halls are, to reach a workable weekly timetable."
+        },
+        {
+          "title": "The result",
+          "body": "A timetable in ten minutes instead of two months. The front end was built from scratch in TypeScript with React and Tailwind CSS, backed by a Spring Boot service on AWS EC2. The college now uses it as its official tool."
+        }
+      ]
+    },
+    "retainyourbrain": {
+      "metric": {
+        "value": "60,000+",
+        "label": "regular users"
+      },
+      "summary": "Retain Health's flagship consumer app, used regularly by 60,000+ people, with Gemini-powered conversational check-ins that support patients in keeping to their routines."
+    },
+    "retainmd-clinician-portal-emr": {
+      "metric": {
+        "value": "5,000+",
+        "label": "patient clinical trial"
+      },
+      "title": "RetainMD EMR",
+      "headline": {
+        "from": "Ad hoc",
+        "to": "Auditable"
+      },
+      "summary": "A clinician-facing EMR supporting a 5,000+ patient clinical trial, where I turned an ad hoc clinical reporting process into a state-based, auditable workflow.",
+      "sections": [
+        {
+          "title": "The problem",
+          "body": "Patient reports followed an ad hoc clinical process. In a clinical trial, every report has to be reliable and every change has to be accountable."
+        },
+        {
+          "title": "The approach",
+          "body": "I designed the Patient Report workflow as a state-based pipeline (draft, review, sign-off, published) with explicit status transitions, and led the Patient Report v3 workspace: a multi-tab clinician experience with live report preview, built from clinical stakeholder requirements."
+        },
+        {
+          "title": "The result",
+          "body": "A reliable, auditable system, extended with patient-facing report generation and a clinician review and sign-off workflow. Gemini now assists clinicians as they author insights and checks report content against biomarkers and other clinical inputs."
+        }
+      ]
+    },
+    "shared-serverless-platform-fda-compliance-pipeline": {
+      "metric": {
+        "value": "99.99%",
+        "label": "uptime"
+      },
+      "title": "Serverless platform",
+      "summary": "The serverless AWS backend shared by all three of Retain Health's products, running at 99.99% uptime, with FDA regulatory validation built into CI/CD.",
+      "sections": [
+        {
+          "title": "The platform",
+          "body": "A shared Node.js and TypeScript backend on AWS Lambda, CDK, RDS, S3 and API Gateway, serving the consumer app, the clinician EMR and the internal admin portal, with HIPAA-compliant handling of patient and clinical data."
+        },
+        {
+          "title": "Compliance in the pipeline",
+          "body": "Working with the FDA compliance team, I built regulatory validation directly into CI/CD, so every release is validated as part of the pipeline."
+        },
+        {
+          "title": "The result",
+          "body": "Release cycles 3 months faster, 99.99% uptime, and a nationwide clinical trial launch for 5,000+ patients."
+        }
+      ]
+    },
+    "pints-app": {
+      "metric": {
+        "value": "1,000+",
+        "label": "users onboarded"
+      }
+    },
+    "warehouse-digitization": {
+      "metric": {
+        "value": "35%",
+        "label": "lower forklift fuel cost"
+      }
+    }
+  }
+}

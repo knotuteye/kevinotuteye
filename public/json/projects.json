@@ -7,6 +7,15 @@
   },
   "projects": [
     {
+      "name": "Open source — Snapcraft and charmhub.io (Canonical)",
+      "link": "https://github.com/knotuteye",
+      "about": "Merged bug-fix and feature pull requests to Snapcraft and charmhub.io, both maintained by Canonical, across 2024 and 2025.",
+      "technologies": [
+        "Open source",
+        "Code review"
+      ]
+    },
+    {
       "name": "KRONOS — GREEDY ALGORITHM FOR SCHEDULING LECTURES BY SOFT CONSTRAINT OPTIMIZATION, KNUST",
       "link": "",
       "about": "An implementation of a greedy algorithm which schedules lectures into a workable weekly timetable, taking into consideration a weighted number of soft constraints including the comfort of lecturers and students and the distance between lecture halls. The project solves an NP-hard problem and replaced the manual method of scheduling, cutting timetable generation for the College of Engineering at Kwame Nkrumah University of Science and Technology from 2 months to 10 minutes. It has been adopted by the College of Engineering as its official scheduling tool. The front end was built from scratch in Typescript with React and Tailwind CSS, backed by a Spring Boot service deployed on AWS EC2.",
@@ -22,7 +31,7 @@
       ]
     },
     {
-      "name": "GODSEYE VIDEO SURVEILLANCE BACKEND",
+      "name": "GodsEye — Video surveillance backend",
       "link": "",
       "about": "The backend for a surveillance system allowing parents to access live feeds from Raspberry Pi-based cameras in their wards' classrooms. It houses the API endpoints for in-house authentication and OAuth, motion detection, and routines to stream camera frames to authenticated API consumers. It also employs compression of frames for transmission. This project was deployed as a proof of concept for a local edtech initiative seeking to develop a product like Ring.",
       "technologies": [

@@ -2,7 +2,7 @@ import Head from 'next/head'
 
 const SITE = 'Kevin Otuteye'
 const DEFAULT_DESCRIPTION =
-  "Kevin Otuteye — full stack developer and music enthusiast. An explorable 3D portfolio of work, projects and background."
+  'Kevin Otuteye, senior software engineer building LLM features and auditable workflows for HIPAA-compliant healthcare platforms. Work, projects and the route from Kumasi to Boston.'
 
 /**
  * Absolute origin, which Open Graph requires and relative paths cannot give.
@@ -13,17 +13,19 @@ const DEFAULT_DESCRIPTION =
  * is a guess at the production domain and is only ever right by luck.
  */
 const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kevinotuteye.com'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kevinotuteye.vercel.app'
 ).replace(/\/$/, '')
 
 export default function Seo({
   title,
   description = DEFAULT_DESCRIPTION,
   path = '/',
+  noindex = false,
 }: {
   title?: string
   description?: string
   path?: string
+  noindex?: boolean
 }) {
   const fullTitle = title ? `${title} · ${SITE}` : `${SITE} · Portfolio`
   const url = `${SITE_URL}${path}`
@@ -38,6 +40,7 @@ export default function Seo({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
+      {noindex ? <meta name="robots" content="noindex" /> : null}
 
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE} />

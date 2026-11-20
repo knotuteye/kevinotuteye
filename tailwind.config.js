@@ -1,32 +1,29 @@
 const theme = require('./Theme')
 
-// Tailwind v3: `purge` became `content`, and JIT is the default engine (no `mode` key).
-// The safelist stays because several components build class names dynamically
-// (`text-${color}` / `bg-${color}`) from Theme.js, which the scanner cannot see.
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './Theme.js',
-  ],
-  safelist: Object.keys(theme.colors)
-    .map((x) => `text-${x}`)
-    .concat(Object.keys(theme.colors).map((x) => `bg-${x}`))
-    .concat(Object.keys(theme.colors).map((x) => `border-${x}`)),
-  darkMode: false,
+  content: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
   theme: {
     colors: {
       ...theme.colors,
-      ...theme.world,
-      white: '#ffffff',
-      black: '#000000',
       transparent: 'transparent',
       current: 'currentColor',
     },
+    // The variables are set by next/font in lib/fonts.ts.
     fontFamily: {
-      ...theme.fontFamily,
+      display: ['var(--font-archivo)', 'Arial Narrow', 'sans-serif'],
+      sans: ['var(--font-instrument)', 'system-ui', 'sans-serif'],
+      mono: ['var(--font-jetbrains)', 'ui-monospace', 'monospace'],
     },
-    extend: {},
+    extend: {
+      transitionTimingFunction: {
+        // "Loom": the one curve used across the whole site.
+        loom: 'cubic-bezier(0.7, 0, 0.2, 1)',
+      },
+      maxWidth: {
+        page: '1440px',
+      },
+    },
   },
   plugins: [],
 }

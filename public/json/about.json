@@ -1,5 +1,5 @@
 {
-  "summary": "Senior Full-Stack Software Engineer with 7+ years building cloud-native, HIPAA-compliant healthcare platforms — from a consumer app with 60,000+ users to a clinician-facing EMR supporting a 5,000+ patient clinical trial at 99.99% uptime. I own products end-to-end and mentor engineers across remote, cross-continental teams.",
+  "summary": "Senior Software Engineer with 7+ years owning products end-to-end in HIPAA-compliant healthcare systems. Built and shipped Gemini-powered features in production, turned an ad hoc clinical process into a state-based, auditable workflow, and architected a serverless AWS backend at 99.99% uptime. Partnered with the FDA compliance team on regulatory validation in CI/CD that supported a 5,000+ patient clinical trial launch.",
   "education": [
     {
       "qualification": "BSc, Computer Engineering",
@@ -23,27 +23,50 @@
   ],
   "skills": [
     {
+      "category": "AI / LLM",
+      "items": [
+        "Google Gemini API (production: conversational patient messaging, AI-assisted clinical authoring and verification)",
+        "Cursor",
+        "Claude Code",
+        "Antigravity",
+        "GitHub Copilot",
+        "Claude",
+        "ChatGPT"
+      ]
+    },
+    {
+      "category": "Backend & systems",
+      "items": [
+        "Event-driven and state-based workflow design",
+        "Serverless architecture",
+        "Distributed systems",
+        "Microservices",
+        "RESTful APIs",
+        "Node.js",
+        "Express",
+        "TypeScript",
+        "Spring Boot (Java)"
+      ]
+    },
+    {
       "category": "Cloud & DevOps",
       "items": [
+        "Google Cloud",
         "AWS Lambda",
         "AWS CDK",
         "AWS RDS",
         "AWS S3",
         "AWS API Gateway",
         "AWS EC2",
-        "Google Cloud",
         "Firebase",
-        "Github Actions",
-        "Gitlab CI",
-        "Docker"
+        "Docker",
+        "GitHub Actions",
+        "GitLab CI",
+        "Regulatory validation in CI/CD"
       ]
     },
     {
-      "category": "Languages",
-      "items": ["Typescript", "JavaScript", "Python", "Java", "SQL"]
-    },
-    {
-      "category": "Frameworks",
+      "category": "Frontend & mobile",
       "items": [
         "React",
         "Next.js",
@@ -51,26 +74,42 @@
         "Vue.js",
         "React Native",
         "Flutter",
-        "Express",
-        "Spring Boot",
         "Tailwind CSS"
       ]
     },
     {
+      "category": "Compliance & security",
+      "items": [
+        "Audit-trail-driven workflows",
+        "HIPAA-compliant data handling",
+        "PHI-aware system design"
+      ]
+    },
+    {
       "category": "Databases",
-      "items": ["MySQL", "MongoDB"]
+      "items": [
+        "Relational data modeling",
+        "MySQL",
+        "MongoDB"
+      ]
     },
     {
       "category": "Testing",
-      "items": ["Jest", "Enzyme", "Cypress", "Puppeteer"]
+      "items": [
+        "Jest",
+        "Enzyme",
+        "Cypress",
+        "Puppeteer"
+      ]
     },
     {
-      "category": "Leadership & Collaboration",
+      "category": "Languages",
       "items": [
-        "Technical ownership",
-        "Mentorship",
-        "Interviewing",
-        "Remote cross-continental collaboration"
+        "Python",
+        "TypeScript",
+        "JavaScript",
+        "Java",
+        "SQL"
       ]
     }
   ],
@@ -98,6 +137,7 @@
   ],
   "contact": {
     "email": "kevinotuteye@gmail.com",
+    "phone": "+233 59 986 6910",
     "resume": "/kevin-otuteye.pdf",
     "links": [
       {
@@ -116,5 +156,6 @@
         "href": "https://www.gitlab.com/kevinotuteye"
       }
     ]
-  }
+  },
+  "location": "Accra, Ghana"
 }

@@ -37,8 +37,9 @@
         {
           "name": "RetainYourBrain — Consumer App",
           "link": "https://retainhealth.com",
-          "about": "The company's flagship consumer app, with 60,000+ regular users. I developed and own the Health Profile system, including its reusable custom UI graph components and the Brain Health Report export feature. I am currently leading the app's migration from AngularJS to React Native.",
+          "about": "The company's flagship consumer app, with 60,000+ regular users. I developed and own the Health Profile system, including its reusable custom UI graph components and the Brain Health Report export feature. I am currently leading the app's migration from AngularJS to React Native. I also built its Gemini-powered conversational messaging, which checks in on patients' adherence to their routines and delivers real-time motivational support.",
           "technologies": [
+            "Google Gemini API",
             "React Native",
             "AngularJS",
             "Typescript",
@@ -51,8 +52,9 @@
         {
           "name": "RetainMD Clinician Portal (EMR)",
           "link": "",
-          "about": "A clinician-facing EMR supporting a 5,000+ patient clinical trial. I delivered the Patient Report v3 workspace — a multi-tab clinician experience spanning Health Profile, Insights, Clinician Notes and Recommended Routines, with live report preview — then extended the pipeline with patient-facing report generation and a clinician review/sign-off workflow including report status transitions. I also designed the clinical insights authoring system (reusable smart phrases, Boston Heart lab integration) and the clinician dashboard for managing assigned patients with Calendly scheduling.",
+          "about": "A clinician-facing EMR supporting a 5,000+ patient clinical trial. I delivered the Patient Report v3 workspace — a multi-tab clinician experience spanning Health Profile, Insights, Clinician Notes and Recommended Routines, with live report preview — then extended the pipeline with patient-facing report generation and a clinician review/sign-off workflow including report status transitions. I also designed the clinical insights authoring system (reusable smart phrases, Boston Heart lab integration) and the clinician dashboard for managing assigned patients with Calendly scheduling. I designed the Patient Report workflow as a state-based pipeline (draft, review, sign-off, published), turning an ad hoc clinical process into a reliable, auditable system, and integrated Gemini into the clinical insights authoring system to assist authoring and verify report content against biomarkers and other clinical inputs.",
           "technologies": [
+            "Google Gemini API",
             "React",
             "Typescript",
             "AWS Lambda",
@@ -78,7 +80,7 @@
         {
           "name": "Shared Serverless Platform & FDA Compliance Pipeline",
           "link": "",
-          "about": "I architected and maintain the serverless AWS backend shared by all three products, achieving 99.99% uptime. Partnering with the FDA compliance team, I integrated regulatory validation directly into CI/CD, accelerating release cycles by 3 months and supporting a 5,000+ patient clinical trial through a successful nationwide launch. Alongside this I have interviewed 20+ candidates and mentored junior developers on secure API design and backend architecture.",
+          "about": "I architected and maintain the serverless Node.js/TypeScript backend on AWS shared by all three products, with HIPAA-compliant handling of patient and clinical data,, achieving 99.99% uptime. Partnering with the FDA compliance team, I integrated regulatory validation directly into CI/CD, accelerating release cycles by 3 months and supporting a 5,000+ patient clinical trial through a successful nationwide launch. Alongside this I have interviewed 20+ candidates and mentored junior developers on secure API design and backend architecture.",
           "technologies": [
             "AWS Lambda",
             "AWS CDK",
